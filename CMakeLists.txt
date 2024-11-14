@@ -9,6 +9,7 @@ add_library(libftpp STATIC
         library/data_buffer.cpp
         library/data_buffer.hpp
 )
+target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
 target_include_directories(libftpp PUBLIC
         library
 )
