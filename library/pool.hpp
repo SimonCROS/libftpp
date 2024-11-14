@@ -96,6 +96,8 @@ public:
         }
     };
 
+    Pool() = default;
+
     explicit Pool(const size_t& size)
     {
         resize(size);
