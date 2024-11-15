@@ -8,6 +8,7 @@
 #include <stack>
 #include <unordered_set>
 #include <utility>
+#include <cstdint>
 
 template <typename TType>
 class Pool
@@ -130,12 +131,12 @@ public:
         }
     }
 
-    [[nodiscard]] auto getSize() const -> u_int32_t
+    [[nodiscard]] auto getSize() const -> uint32_t
     {
         return m_size;
     }
 
-    [[nodiscard]] auto getAvailableCount() const -> u_int32_t
+    [[nodiscard]] auto getAvailableCount() const -> uint32_t
     {
         return m_data.size();
     }
@@ -153,7 +154,7 @@ public:
     }
 
 private:
-    u_int32_t m_size = 0;
+    uint32_t m_size = 0;
     std::allocator<TType> m_allocator;
     std::stack<TType*> m_data;
 
