@@ -10,14 +10,14 @@
 #include <utility>
 #include <cstdint>
 
-template <typename TType>
+template <class TType>
 class Pool
 {
 public:
     class Object
     {
     public:
-        template <typename... TArgs>
+        template <class... TArgs>
             requires std::constructible_from<TType, TArgs...>
         Object(Pool* pool, TType* memory, TArgs... args): m_pool(pool)
         {
@@ -141,7 +141,7 @@ public:
         return m_data.size();
     }
 
-    template <typename... TArgs>
+    template <class... TArgs>
         requires std::constructible_from<TType, TArgs...>
     auto acquire(TArgs&&... p_args) -> Object
     {
