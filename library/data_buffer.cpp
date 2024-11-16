@@ -6,6 +6,11 @@
 
 #include <cassert>
 
+const char* DataBuffer::DataDeserializationException::what() const noexcept
+{
+    return "Failed to retrieve data from buffer";
+}
+
 auto DataBuffer::pushBytes(const void* data, const std::size_t size) -> void
 {
     assert(data != nullptr);
@@ -42,4 +47,20 @@ auto DataBuffer::unshiftBytes(const std::size_t size, void* out) -> void
         std::copy_n(mBytes.begin(), size, ptr);
     }
     mBytes.erase(mBytes.begin(), mBytes.begin() + static_cast<decltype(mBytes)::difference_type>(size));
+}
+
+auto operator<<(DataBuffer& buffer, const std::string_view& value) -> DataBuffer&
+{
+    buffer << value.size();
+    buffer.pushBytes(value.data(), value.size());
+    return buffer;
+}
+
+auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&
+{
+    size_t size = 0;
+    buffer >> size;
+    value.assign_range(buffer.frontBytes(size));
+    buffer.unshiftBytes(size, nullptr);
+    return buffer;
 }
