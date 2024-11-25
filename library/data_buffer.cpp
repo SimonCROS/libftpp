@@ -68,14 +68,10 @@ auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&
 #ifdef __cpp_lib_containers_ranges
     value.assign_range(buffer.frontBytes(size));
 #else
-    std::cout << "vvvv" << std::endl;
-    std::cout << (void*)value.data() << std::endl;
-
-    auto bytes = buffer.frontBytes(size) | std::views::transform([](const unsigned char x) { std::putchar(x); });
+    auto bytes = buffer.frontBytes(size);
+    // GCC's libstdc++ 14.2.0 doesn't optimize "assign" because we use unsigned chars, but expects chars.
+    // Apply lazy transform for casting on "bytes" may optimize, but I haven't tested it, and it might break on other implementations.
     value.assign(bytes.begin(), bytes.end());
-    std::cout << (void*)bytes.begin().operator->() << std::endl;
-    std::cout << (void*)value.data() << std::endl;
-    std::cout << "^^^^" << std::endl;
 #endif
 
     buffer.unshiftBytes(size, nullptr);

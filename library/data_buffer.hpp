@@ -15,8 +15,8 @@
 class DataBuffer
 {
 public:
-    typedef std::deque<uint8_t> container_type;
-    typedef container_type::difference_type difference_type;
+    using container_type = std::deque<uint8_t>;
+    using difference_type = container_type::difference_type;
     static constexpr auto size_max_v = std::numeric_limits<difference_type>::max();
 
     class DataDeserializationException final : public std::exception
