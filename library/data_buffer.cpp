@@ -5,6 +5,8 @@
 #include "data_buffer.hpp"
 
 #include <cassert>
+#include <algorithm>
+#include <ranges>
 
 const char* DataBuffer::DataDeserializationException::what() const noexcept
 {
@@ -15,16 +17,16 @@ auto DataBuffer::pushBytes(const void* data, const std::size_t size) -> void
 {
     assert(data != nullptr);
 
-    if (size > max_push_size)
+    if (size > size_max_v)
         throw DataDeserializationException();
 
-    auto ptr = static_cast<const uint8_t*>(data);
+    const auto ptr = static_cast<const uint8_t*>(data);
     mBytes.insert(mBytes.end(), ptr, ptr + size);
 }
 
 auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<decltype(mBytes)::const_iterator>
 {
-    if (size > max_push_size)
+    if (size > size_max_v)
         throw DataDeserializationException();
 
     if (mBytes.size() < size)
@@ -35,7 +37,7 @@ auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<dec
 
 auto DataBuffer::unshiftBytes(const std::size_t size, void* out) -> void
 {
-    if (size > max_push_size)
+    if (size > size_max_v)
         throw DataDeserializationException();
 
     if (mBytes.size() < size)
@@ -43,8 +45,8 @@ auto DataBuffer::unshiftBytes(const std::size_t size, void* out) -> void
 
     if (out != nullptr)
     {
-        auto ptr = static_cast<uint8_t*>(out);
-        std::copy_n(mBytes.begin(), size, ptr);
+        const auto ptr = static_cast<uint8_t*>(out);
+        std::ranges::copy_n(mBytes.begin(), static_cast<difference_type>(size), ptr);
     }
     mBytes.erase(mBytes.begin(), mBytes.begin() + static_cast<decltype(mBytes)::difference_type>(size));
 }
@@ -60,7 +62,14 @@ auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&
 {
     size_t size = 0;
     buffer >> size;
+
+#ifdef __cpp_lib_containers_ranges
     value.assign_range(buffer.frontBytes(size));
+#else
+    auto bytes = buffer.frontBytes(size);
+    value.assign(bytes.begin(), bytes.end());
+#endif
+
     buffer.unshiftBytes(size, nullptr);
     return buffer;
 }

@@ -6,6 +6,7 @@
 #define DATA_BUFFER_HPP
 #include <cstdint>
 #include <deque>
+#include <limits>
 #include <optional>
 #include <streambuf>
 #include <vector>
@@ -13,11 +14,10 @@
 
 class DataBuffer
 {
-private:
-    std::deque<uint8_t> mBytes;
-
 public:
-    static constexpr auto max_push_size = std::numeric_limits<decltype(mBytes)::difference_type>::max();
+    typedef std::deque<uint8_t> container_type;
+    typedef container_type::difference_type difference_type;
+    static constexpr auto size_max_v = std::numeric_limits<difference_type>::max();
 
     class DataDeserializationException final : public std::exception
     {
@@ -26,9 +26,12 @@ public:
 
     auto pushBytes(const void* data, std::size_t size) -> void;
 
-    auto frontBytes(std::size_t size) -> std::ranges::subrange<decltype(mBytes)::const_iterator>;
+    [[nodiscard]] auto frontBytes(std::size_t size) -> std::ranges::subrange<container_type::const_iterator>;
 
     auto unshiftBytes(std::size_t size, void* out) -> void;
+
+private:
+    std::deque<uint8_t> mBytes;
 };
 
 template <class T>
@@ -47,8 +50,8 @@ auto operator>>(DataBuffer& buffer, T& value) -> DataBuffer&
     return buffer;
 }
 
-inline auto operator<<(DataBuffer& buffer, const std::string_view& value) -> DataBuffer&;
+auto operator<<(DataBuffer& buffer, const std::string_view& value) -> DataBuffer&;
 
-inline auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&;
+auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&;
 
 #endif //DATA_BUFFER_HPP
