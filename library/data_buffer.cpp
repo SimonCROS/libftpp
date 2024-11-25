@@ -58,8 +58,6 @@ auto operator<<(DataBuffer& buffer, const std::string_view& value) -> DataBuffer
     return buffer;
 }
 
-#include <iostream>
-
 auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&
 {
     size_t size = 0;
