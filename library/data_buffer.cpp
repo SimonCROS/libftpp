@@ -24,7 +24,7 @@ auto DataBuffer::pushBytes(const void* data, const std::size_t size) -> void
     mBytes.insert(mBytes.end(), ptr, ptr + size);
 }
 
-auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<decltype(mBytes)::const_iterator>
+auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<container_type::const_iterator>
 {
     if (size > size_max_v)
         throw DataDeserializationException();
@@ -32,7 +32,7 @@ auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<dec
     if (mBytes.size() < size)
         throw DataDeserializationException();
 
-    return std::ranges::subrange(mBytes.begin(), mBytes.begin() + static_cast<decltype(mBytes)::difference_type>(size));
+    return std::ranges::subrange(mBytes.begin(), mBytes.begin() + static_cast<container_type::difference_type>(size));
 }
 
 auto DataBuffer::unshiftBytes(const std::size_t size, void* out) -> void
@@ -48,7 +48,7 @@ auto DataBuffer::unshiftBytes(const std::size_t size, void* out) -> void
         const auto ptr = static_cast<uint8_t*>(out);
         std::ranges::copy_n(mBytes.begin(), static_cast<difference_type>(size), ptr);
     }
-    mBytes.erase(mBytes.begin(), mBytes.begin() + static_cast<decltype(mBytes)::difference_type>(size));
+    mBytes.erase(mBytes.begin(), mBytes.begin() + static_cast<difference_type>(size));
 }
 
 auto operator<<(DataBuffer& buffer, const std::string_view& value) -> DataBuffer&
@@ -58,6 +58,8 @@ auto operator<<(DataBuffer& buffer, const std::string_view& value) -> DataBuffer
     return buffer;
 }
 
+#include <iostream>
+
 auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&
 {
     size_t size = 0;
@@ -66,8 +68,14 @@ auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&
 #ifdef __cpp_lib_containers_ranges
     value.assign_range(buffer.frontBytes(size));
 #else
-    auto bytes = buffer.frontBytes(size);
+    std::cout << "vvvv" << std::endl;
+    std::cout << (void*)value.data() << std::endl;
+
+    auto bytes = buffer.frontBytes(size) | std::views::transform([](const unsigned char x) { std::putchar(x); });
     value.assign(bytes.begin(), bytes.end());
+    std::cout << (void*)bytes.begin().operator->() << std::endl;
+    std::cout << (void*)value.data() << std::endl;
+    std::cout << "^^^^" << std::endl;
 #endif
 
     buffer.unshiftBytes(size, nullptr);
