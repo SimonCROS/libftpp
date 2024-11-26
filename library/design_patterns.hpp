@@ -6,5 +6,6 @@
 #define DESIGN_PATTERNS_HPP
 
 #include "memento.hpp"
+#include "observer.hpp"
 
 #endif //DESIGN_PATTERNS_HPP

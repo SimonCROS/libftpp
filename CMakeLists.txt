@@ -12,6 +12,7 @@ add_library(libftpp STATIC
         library/design_patterns.hpp
         library/memento.cpp
         library/memento.hpp
+        library/observer.hpp
 )
 target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
 target_include_directories(libftpp PUBLIC
