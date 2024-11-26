@@ -21,7 +21,7 @@ auto DataBuffer::pushBytes(const void* data, const std::size_t size) -> void
         throw DataDeserializationException();
 
     const auto ptr = static_cast<const uint8_t*>(data);
-    mBytes.insert(mBytes.end(), ptr, ptr + size);
+    m_bytes.insert(m_bytes.end(), ptr, ptr + size);
 }
 
 auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<container_type::const_iterator>
@@ -29,10 +29,10 @@ auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<con
     if (size > size_max_v)
         throw DataDeserializationException();
 
-    if (mBytes.size() < size)
+    if (m_bytes.size() < size)
         throw DataDeserializationException();
 
-    return std::ranges::subrange(mBytes.begin(), mBytes.begin() + static_cast<container_type::difference_type>(size));
+    return std::ranges::subrange(m_bytes.begin(), m_bytes.begin() + static_cast<container_type::difference_type>(size));
 }
 
 auto DataBuffer::unshiftBytes(const std::size_t size, void* out) -> void
@@ -40,15 +40,15 @@ auto DataBuffer::unshiftBytes(const std::size_t size, void* out) -> void
     if (size > size_max_v)
         throw DataDeserializationException();
 
-    if (mBytes.size() < size)
+    if (m_bytes.size() < size)
         throw DataDeserializationException();
 
     if (out != nullptr)
     {
         const auto ptr = static_cast<uint8_t*>(out);
-        std::ranges::copy_n(mBytes.begin(), static_cast<difference_type>(size), ptr);
+        std::ranges::copy_n(m_bytes.begin(), static_cast<difference_type>(size), ptr);
     }
-    mBytes.erase(mBytes.begin(), mBytes.begin() + static_cast<difference_type>(size));
+    m_bytes.erase(m_bytes.begin(), m_bytes.begin() + static_cast<difference_type>(size));
 }
 
 auto operator<<(DataBuffer& buffer, const std::string_view& value) -> DataBuffer&

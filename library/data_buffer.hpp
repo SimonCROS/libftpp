@@ -31,7 +31,7 @@ public:
     auto unshiftBytes(std::size_t size, void* out) -> void;
 
 private:
-    std::deque<uint8_t> mBytes;
+    std::deque<uint8_t> m_bytes;
 };
 
 template <class T>
