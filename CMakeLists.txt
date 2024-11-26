@@ -5,10 +5,13 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(libftpp STATIC
+        library/data_structures.hpp
         library/pool.hpp
         library/data_buffer.cpp
         library/data_buffer.hpp
-        library/data_structures.hpp
+        library/design_patterns.hpp
+        library/memento.cpp
+        library/memento.hpp
 )
 target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
 target_include_directories(libftpp PUBLIC

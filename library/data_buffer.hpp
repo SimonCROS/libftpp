@@ -24,6 +24,8 @@ public:
         [[nodiscard]] const char* what() const noexcept override;
     };
 
+    DataBuffer() = default;
+
     auto pushBytes(const void* data, std::size_t size) -> void;
 
     [[nodiscard]] auto frontBytes(std::size_t size) -> std::ranges::subrange<container_type::const_iterator>;
