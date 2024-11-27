@@ -16,6 +16,8 @@ add_library(libftpp STATIC
         library/singleton_exception.cpp
         library/singleton_exception.hpp
         library/singleton.hpp
+        library/state_machine.cpp
+        library/state_machine.hpp
 )
 target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
 target_include_directories(libftpp PUBLIC
