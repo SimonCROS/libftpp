@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <utility>
 #include <cstdint>
+#include <concepts>
 
 template <class TType>
 class Pool

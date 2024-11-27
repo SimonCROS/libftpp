@@ -7,5 +7,6 @@
 
 #include "memento.hpp"
 #include "observer.hpp"
+#include "singleton.hpp"
 
 #endif //DESIGN_PATTERNS_HPP

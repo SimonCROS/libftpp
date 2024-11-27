@@ -17,7 +17,8 @@ public:
     void subscribe(const TEvent& event, const std::function<void()>& lambda)
     {
         typename container_type::iterator it;
-        std::tie(it, std::ignore) = m_observers.try_emplace(event);
+        // Try emplace with _Args... empty will create new empty vector if key is not already registered
+        std::tie(it, std::ignore) = m_observers.try_emplace(event);\
         it->second.push_back(lambda);
     }
 

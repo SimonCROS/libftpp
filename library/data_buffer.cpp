@@ -63,7 +63,7 @@ auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&
     size_t size = 0;
     buffer >> size;
 
-#ifdef __cpp_lib_containers_ranges
+#if __cpp_lib_containers_ranges >= 202202L
     value.assign_range(buffer.frontBytes(size));
 #else
     auto bytes = buffer.frontBytes(size);

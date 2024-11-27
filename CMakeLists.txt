@@ -13,6 +13,9 @@ add_library(libftpp STATIC
         library/memento.cpp
         library/memento.hpp
         library/observer.hpp
+        library/singleton_exception.cpp
+        library/singleton_exception.hpp
+        library/singleton.hpp
 )
 target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
 target_include_directories(libftpp PUBLIC
