@@ -9,8 +9,7 @@
 
 #include <optional>
 #include <concepts>
-
-#include "singleton_exception.hpp"
+#include <stdexcept>
 
 template <class TType>
 class Singleton
@@ -21,7 +20,7 @@ public:
     static auto instance() -> TType*
     {
         if (!m_instance)
-            throw SingletonException("Instance not yet created");
+            throw std::invalid_argument("Instance not yet created");
         return &m_instance.value();
     }
 
@@ -30,7 +29,7 @@ public:
     static auto instantiate(TArgs&&... p_args) -> void
     {
         if (m_instance)
-            throw SingletonException("Instance already created");
+            throw std::invalid_argument("Instance already created");
         m_instance.emplace(std::forward<TArgs>(p_args)...);
     }
 
