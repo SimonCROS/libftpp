@@ -25,7 +25,7 @@ private:
     };
 
 public:
-    void addState(const TState& state)
+    auto addState(const TState& state) -> void
     {
         bool result;
         std::tie(std::ignore, result) = m_states.try_emplace(state);
@@ -36,7 +36,7 @@ public:
             m_currentState.emplace(state);
     }
 
-    void addTransition(const TState& startState, const TState& finalState, const std::function<void()>& lambda)
+    auto addTransition(const TState& startState, const TState& finalState, const std::function<void()>& lambda) -> void
     {
         const auto it = m_states.find(startState);
         if (it == m_states.end())
@@ -48,7 +48,7 @@ public:
             throw std::invalid_argument("This transition already exist");
     }
 
-    void addAction(const TState& state, const std::function<void()>& lambda)
+    auto addAction(const TState& state, const std::function<void()>& lambda) -> void
     {
         const auto it = m_states.find(state);
         if (it == m_states.end())
@@ -59,7 +59,7 @@ public:
         it->second.action.emplace(lambda);
     }
 
-    void transitionTo(const TState& state)
+    auto transitionTo(const TState& state) -> void
     {
         if (!m_currentState.has_value())
             throw std::logic_error("No state registered");
@@ -73,7 +73,7 @@ public:
         m_currentState = state;
     }
 
-    void update()
+    auto update() -> void
     {
         if (!m_currentState.has_value())
             throw std::logic_error("No state registered");

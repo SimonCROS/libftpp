@@ -14,7 +14,7 @@ class Observer
     using container_type = std::unordered_map<TEvent, std::vector<std::function<void()>>>;
 
 public:
-    void subscribe(const TEvent& event, const std::function<void()>& lambda)
+    auto subscribe(const TEvent& event, const std::function<void()>& lambda) -> void
     {
         typename container_type::iterator it;
         // Try emplace with _Args... empty will create new empty vector if key is not already registered
@@ -22,7 +22,7 @@ public:
         it->second.push_back(lambda);
     }
 
-    void notify(const TEvent& event)
+    auto notify(const TEvent& event) -> void
     {
         const auto it = m_observers.find(event);
         if (it != m_observers.end())
