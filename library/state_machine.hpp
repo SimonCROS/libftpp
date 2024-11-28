@@ -69,7 +69,7 @@ public:
         if (it == stateData.transitions.end())
             throw std::invalid_argument("No transition available");
 
-        it->second();
+        std::invoke(it->second);
         m_currentState = state;
     }
 
@@ -82,7 +82,7 @@ public:
         if (!stateData.action.has_value())
             throw std::logic_error("No action for the current state");
 
-        (*stateData.action)();
+        std::invoke(*stateData.action);
     }
 
 private:

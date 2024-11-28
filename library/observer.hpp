@@ -29,7 +29,7 @@ public:
         {
             for (const auto& element : it->second)
             {
-                element();
+                std::invoke(element);
             }
         }
     }
