@@ -9,12 +9,23 @@ add_library(libftpp STATIC
         library/pool.hpp
         library/data_buffer.cpp
         library/data_buffer.hpp
+
         library/design_patterns.hpp
         library/memento.cpp
         library/memento.hpp
         library/observer.hpp
         library/singleton.hpp
         library/state_machine.hpp
+
+        library/thread_safe_iostream.cpp
+        library/thread_safe_iostream.hpp
+        library/prefixed_o_stream.cpp
+        library/prefixed_o_stream.hpp
+
+        library/threading.hpp
+        library/thread_safe_queue.hpp
+        library/thread.cpp
+        library/thread.hpp
 )
 target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
 target_include_directories(libftpp PUBLIC

@@ -7,6 +7,8 @@
 #include <functional>
 #include <thread>
 
+#include "thread_safe_iostream.hpp"
+
 class Thread
 {
     std::string m_name;
@@ -16,16 +18,9 @@ class Thread
 public:
     Thread(const std::string& name, std::function<void()> functToExecute);
 
-    auto start() -> void
-    {
-        m_thread = std::thread(m_func); // TODO wrap and set name
-    }
+    auto start() -> void;
 
-    auto stop() -> void
-    {
-        if (m_thread.joinable())
-            m_thread.join();
-    }
+    auto stop() -> void;
 };
 
 #endif //THREAD_HPP
