@@ -2,7 +2,7 @@
 // Created by Simon Cros on 28/11/2024.
 //
 
-#include "prefixed_o_stream.hpp"
+#include "prefixed_ostream.hpp"
 
 PrefixedStreamBuf::PrefixedStreamBuf(std::streambuf* originalBuffer): m_originalBuffer(originalBuffer), m_atStartOfLine(true)
 {

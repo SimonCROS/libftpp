@@ -19,8 +19,8 @@ add_library(libftpp STATIC
 
         library/thread_safe_iostream.cpp
         library/thread_safe_iostream.hpp
-        library/prefixed_o_stream.cpp
-        library/prefixed_o_stream.hpp
+        library/prefixed_ostream.cpp
+        library/prefixed_ostream.hpp
 
         library/threading.hpp
         library/thread_safe_queue.hpp

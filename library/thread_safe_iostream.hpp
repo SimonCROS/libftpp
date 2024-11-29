@@ -8,7 +8,7 @@
 #include <string>
 #include <iostream>
 
-#include "prefixed_o_stream.hpp"
+#include "prefixed_ostream.hpp"
 
 template <class T>
 concept Printable = requires(T value)
