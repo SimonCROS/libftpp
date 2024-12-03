@@ -7,11 +7,11 @@
 auto ThreadSafeIOStream::setPrefix(const std::string& prefix) -> void
 {
     std::lock_guard lock(ms_writeMutex); // << overload (write) uses m_prefix
-    m_prefixedStdout.setPrefix(prefix);
+    m_buffer.setPrefix(prefix);
 }
 
 auto ThreadSafeIOStream::operator<<(std::ostream&(* manip)(std::ostream&)) -> ThreadSafeIOStream&
 {
-    m_prefixedStdout << manip;
+    m_buffer << manip;
     return *this;
 }

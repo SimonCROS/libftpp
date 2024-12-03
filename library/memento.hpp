@@ -15,7 +15,7 @@ public:
     auto load(const Snapshot& state) -> void;
 
 private:
-    virtual auto _saveToSnapshot(Snapshot& snapshotToFill) -> void = 0;
+    virtual auto _saveToSnapshot(Snapshot& snapshotToFill) const -> void = 0;
     virtual auto _loadFromSnapshot(Snapshot& snapshot) -> void = 0;
 };
 

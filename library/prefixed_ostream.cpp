@@ -4,6 +4,8 @@
 
 #include "prefixed_ostream.hpp"
 
+#include <iostream>
+
 PrefixedStreamBuf::PrefixedStreamBuf(std::streambuf* originalBuffer): m_originalBuffer(originalBuffer), m_atStartOfLine(true)
 {
 }
@@ -18,17 +20,35 @@ auto PrefixedStreamBuf::setPrefix(const std::string& prefix) -> void
 
 int PrefixedStreamBuf::overflow(const int c)
 {
-    if (c != std::char_traits<char>::eof())
+    if (c != traits_type::eof())
     {
         if (m_atStartOfLine && !m_prefix.empty())
         {
-            const auto wrote = m_originalBuffer->sputn(m_prefix.c_str(), static_cast<std::streamsize>(m_prefix.size()));
+            const auto wrote = m_lineBuffer.sputn(m_prefix.c_str(), static_cast<std::streamsize>(m_prefix.size()));
             if (static_cast<std::streamsize>(m_prefix.size()) != wrote)
-                return std::char_traits<char>::eof();
+                return traits_type::eof();
         }
         m_atStartOfLine = c == '\n';
     }
-    return m_originalBuffer->sputc(static_cast<char>(c));
+
+    const auto res = m_lineBuffer.sputc(static_cast<char>(c));
+    if (res == traits_type::eof())
+        return res;
+
+    if (m_atStartOfLine)
+    {
+        // Flush
+        const auto line = m_lineBuffer.view();
+        const auto lineLength = static_cast<std::streamsize>(line.length());
+        const auto wrote = m_originalBuffer->sputn(line.data(), lineLength);
+
+        m_lineBuffer = std::stringbuf();
+
+        if (lineLength != wrote)
+            return traits_type::eof();
+    }
+
+    return c;
 }
 
 PrefixedOStream::PrefixedOStream(const std::ostream& originalStream): PrefixedStreamBuf(originalStream.rdbuf()), std::ostream(this)

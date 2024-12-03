@@ -5,6 +5,7 @@
 #ifndef PREFIXED_O_STREAM_HPP
 #define PREFIXED_O_STREAM_HPP
 #include <streambuf>
+#include <sstream>
 #include <ostream>
 #include <string>
 
@@ -19,6 +20,7 @@ protected:
     int overflow(int c) override;
 
 private:
+    std::stringbuf m_lineBuffer;
     std::streambuf* m_originalBuffer;
     std::string m_prefix;
     bool m_atStartOfLine;

@@ -14,7 +14,7 @@
 template <class T>
 concept ThreadSafePrintable = requires(T value)
 {
-    std::declval<std::ostringstream>() << value;
+    std::declval<std::stringstream>() << value;
     !std::is_same_v<T, std::ostream& (*)(std::ostream&)>;
 };
 
@@ -29,9 +29,8 @@ class ThreadSafeIOStream
     inline static std::mutex ms_writeMutex;
     inline static std::mutex ms_readMutex;
 
-    std::ostringstream m_stream;
-
-    PrefixedOStream m_prefixedStdout{std::cout};
+    bool m_isBeginOfLine = true;
+    PrefixedOStream m_buffer{std::cout};
 
 public:
     auto setPrefix(const std::string& prefix) -> void;
@@ -42,10 +41,7 @@ public:
     auto operator<<(const T& value) -> ThreadSafeIOStream&
     {
         std::lock_guard lock(ms_writeMutex);
-        m_stream << value;
-
-
-        // m_prefixedStdout << value;
+        m_buffer << value;
         return *this;
     }
 
