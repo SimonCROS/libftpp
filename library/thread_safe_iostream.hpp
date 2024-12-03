@@ -33,6 +33,8 @@ class ThreadSafeIOStream
     PrefixedOStream m_buffer{std::cout};
 
 public:
+    ~ThreadSafeIOStream();
+
     auto setPrefix(const std::string& prefix) -> void;
 
     auto operator<<(std::ostream& (*manip)(std::ostream&)) -> ThreadSafeIOStream&; // required to accept endl
@@ -52,6 +54,17 @@ public:
         std::cin >> value;
         return *this;
     }
+
+    template <class T>
+    auto prompt(const std::string& question, T& dest) -> void
+    {
+        std::lock_guard lock(ms_readMutex);
+        m_buffer << question;
+        m_buffer.flush();
+        std::cin >> dest;
+    }
+
+    auto flush() -> void;
 };
 
 thread_local inline ThreadSafeIOStream threadSafeCout = {};

@@ -4,6 +4,11 @@
 
 #include "thread_safe_iostream.hpp"
 
+ThreadSafeIOStream::~ThreadSafeIOStream()
+{
+    flush();
+}
+
 auto ThreadSafeIOStream::setPrefix(const std::string& prefix) -> void
 {
     std::lock_guard lock(ms_writeMutex); // << overload (write) uses m_prefix
@@ -14,4 +19,10 @@ auto ThreadSafeIOStream::operator<<(std::ostream&(* manip)(std::ostream&)) -> Th
 {
     m_buffer << manip;
     return *this;
+}
+
+auto ThreadSafeIOStream::flush() -> void
+{
+    std::lock_guard lock(ms_readMutex);
+    m_buffer.flush();
 }

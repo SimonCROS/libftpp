@@ -36,19 +36,23 @@ int PrefixedStreamBuf::overflow(const int c)
         return res;
 
     if (m_atStartOfLine)
-    {
-        // Flush
-        const auto line = m_lineBuffer.view();
-        const auto lineLength = static_cast<std::streamsize>(line.length());
-        const auto wrote = m_originalBuffer->sputn(line.data(), lineLength);
-
-        m_lineBuffer = std::stringbuf();
-
-        if (lineLength != wrote)
-            return traits_type::eof();
-    }
+        sync();
 
     return c;
+}
+
+int PrefixedStreamBuf::sync()
+{
+    const auto line = m_lineBuffer.view();
+    const auto lineLength = static_cast<std::streamsize>(line.length());
+    const auto wrote = m_originalBuffer->sputn(line.data(), lineLength);
+
+    m_lineBuffer = std::stringbuf();
+
+    if (lineLength != wrote)
+        return -1;
+
+    return 0;
 }
 
 PrefixedOStream::PrefixedOStream(const std::ostream& originalStream): PrefixedStreamBuf(originalStream.rdbuf()), std::ostream(this)

@@ -18,6 +18,7 @@ public:
 
 protected:
     int overflow(int c) override;
+    int sync() override;
 
 private:
     std::stringbuf m_lineBuffer;
