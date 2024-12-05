@@ -6,6 +6,7 @@
 #define WORKER_POOL_HPP
 #include <condition_variable>
 #include <functional>
+#include <thread>
 
 #include "thread_safe_queue.hpp"
 

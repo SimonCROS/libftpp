@@ -29,7 +29,6 @@ class ThreadSafeIOStream
     inline static std::mutex ms_writeMutex;
     inline static std::mutex ms_readMutex;
 
-    bool m_isBeginOfLine = true;
     PrefixedOStream m_buffer{std::cout};
 
 public:

@@ -32,7 +32,7 @@ auto PersistentWorker::worker() -> void
 
             auto jobs = std::views::values(m_jobs);
 #if __cpp_lib_containers_ranges >= 202202L
-            value.assign_range(jobs);
+            cachedJobs.assign_range(jobs);
 #else
             cachedJobs.assign(jobs.begin(), jobs.end());
 #endif
@@ -55,7 +55,7 @@ PersistentWorker::~PersistentWorker()
     m_stop = true;
 
     {
-        std::unique_lock lock(m_workerMutex);
+        std::scoped_lock lock{m_workerMutex};
         m_conditionVariable.notify_all();
     }
 

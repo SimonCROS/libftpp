@@ -44,7 +44,7 @@ WorkerPool::~WorkerPool()
     m_stop = true;
 
     {
-        std::unique_lock lock(m_workerMutex);
+        std::scoped_lock lock{m_workerMutex};
         m_conditionVariable.notify_all();
     }
 
