@@ -26,6 +26,8 @@ add_library(libftpp STATIC
         library/thread_safe_queue.hpp
         library/thread.cpp
         library/thread.hpp
+        library/worker_pool.cpp
+        library/worker_pool.hpp
 )
 target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
 target_include_directories(libftpp PUBLIC

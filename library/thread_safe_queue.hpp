@@ -14,6 +14,12 @@ class ThreadSafeQueue {
     std::deque<TType> m_deque;
 
 public:
+    auto empty() -> bool
+    {
+        std::lock_guard lock(m_mutex);
+        return m_deque.empty();
+    }
+
     auto push_back(const TType& newElement) -> void
     {
         std::lock_guard lock(m_mutex);
