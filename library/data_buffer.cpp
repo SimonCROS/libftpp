@@ -63,10 +63,10 @@ auto operator>>(DataBuffer& buffer, std::string& value) -> DataBuffer&
     size_t size = 0;
     buffer >> size;
 
-#if __cpp_lib_containers_ranges >= 202202L
-    value.assign_range(buffer.frontBytes(size));
-#else
     auto bytes = buffer.frontBytes(size);
+#if __cpp_lib_containers_ranges >= 202202L
+    value.assign_range(bytes);
+#else
     // GCC's libstdc++ 14.2.0 doesn't optimize "assign" because we use unsigned chars, but expects chars.
     // Apply lazy transform for casting on "bytes" may optimize, but I haven't tested it, and it might break on other implementations.
     value.assign(bytes.begin(), bytes.end());
