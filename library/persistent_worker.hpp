@@ -6,6 +6,7 @@
 #define PERSISTENT_WORKER_HPP
 #include <condition_variable>
 #include <functional>
+#include <mutex>
 #include <unordered_map>
 #if __cpp_lib_associative_heterogeneous_insertion >= 202306L || __cpp_lib_associative_heterogeneous_erasure >= 202110L
 #include <string_view> // used only when addTask/removeTask feature check

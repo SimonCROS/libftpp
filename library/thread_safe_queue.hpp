@@ -16,25 +16,25 @@ class ThreadSafeQueue {
 public:
     auto empty() -> bool
     {
-        std::lock_guard lock(m_mutex);
+        std::scoped_lock lock{m_mutex};
         return m_deque.empty();
     }
 
     auto push_back(const TType& newElement) -> void
     {
-        std::lock_guard lock(m_mutex);
+        std::scoped_lock lock{m_mutex};
         m_deque.push_back(newElement);
     }
 
     auto push_front(const TType& newElement) -> void
     {
-        std::lock_guard lock(m_mutex);
+        std::scoped_lock lock{m_mutex};
         m_deque.push_front(newElement);
     }
 
     auto pop_back() -> TType
     {
-        std::lock_guard lock(m_mutex);
+        std::scoped_lock lock{m_mutex};
 
         if (m_deque.empty())
             throw std::runtime_error("Queue is empty");
@@ -46,7 +46,7 @@ public:
 
     auto pop_front() -> TType
     {
-        std::lock_guard lock(m_mutex);
+        std::scoped_lock lock{m_mutex};
 
         if (m_deque.empty())
             throw std::runtime_error("Queue is empty");
