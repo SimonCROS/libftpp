@@ -42,7 +42,12 @@ WorkerPool::WorkerPool(const int threadCount)
 WorkerPool::~WorkerPool()
 {
     m_stop = true;
-    m_conditionVariable.notify_all();
+
+    {
+        std::unique_lock lock(m_workerMutex);
+        m_conditionVariable.notify_all();
+    }
+
     for (auto& m_thread : m_threads)
     {
         if (m_thread.joinable())
