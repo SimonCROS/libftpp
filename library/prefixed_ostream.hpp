@@ -4,9 +4,9 @@
 
 #ifndef PREFIXED_O_STREAM_HPP
 #define PREFIXED_O_STREAM_HPP
-#include <streambuf>
-#include <sstream>
 #include <ostream>
+#include <sstream>
+#include <streambuf>
 #include <string>
 
 class PrefixedStreamBuf : public std::streambuf
@@ -17,8 +17,8 @@ public:
     auto setPrefix(const std::string& prefix) -> void;
 
 protected:
-    int overflow(int c) override;
-    int sync() override;
+    auto overflow(int c) -> int override;
+    auto sync() -> int override;
 
 private:
     std::stringbuf m_lineBuffer;

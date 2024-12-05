@@ -15,7 +15,7 @@ auto ThreadSafeIOStream::setPrefix(const std::string& prefix) -> void
     m_buffer.setPrefix(prefix);
 }
 
-auto ThreadSafeIOStream::operator<<(std::ostream&(* manip)(std::ostream&)) -> ThreadSafeIOStream&
+auto ThreadSafeIOStream::operator<<(std::ostream&(*manip)(std::ostream&)) -> ThreadSafeIOStream&
 {
     m_buffer << manip;
     return *this;

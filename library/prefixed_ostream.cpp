@@ -6,9 +6,8 @@
 
 #include <iostream>
 
-PrefixedStreamBuf::PrefixedStreamBuf(std::streambuf* originalBuffer): m_originalBuffer(originalBuffer), m_atStartOfLine(true)
-{
-}
+PrefixedStreamBuf::PrefixedStreamBuf(std::streambuf* originalBuffer): m_originalBuffer(originalBuffer),
+                                                                      m_atStartOfLine(true) {}
 
 auto PrefixedStreamBuf::setPrefix(const std::string& prefix) -> void
 {
@@ -18,7 +17,7 @@ auto PrefixedStreamBuf::setPrefix(const std::string& prefix) -> void
     m_prefix = prefix;
 }
 
-int PrefixedStreamBuf::overflow(const int c)
+auto PrefixedStreamBuf::overflow(const int c) -> int
 {
     if (c != traits_type::eof())
     {
@@ -41,7 +40,7 @@ int PrefixedStreamBuf::overflow(const int c)
     return c;
 }
 
-int PrefixedStreamBuf::sync()
+auto PrefixedStreamBuf::sync() -> int
 {
     const auto line = m_lineBuffer.view();
     const auto lineLength = static_cast<std::streamsize>(line.length());
@@ -55,6 +54,5 @@ int PrefixedStreamBuf::sync()
     return 0;
 }
 
-PrefixedOStream::PrefixedOStream(const std::ostream& originalStream): PrefixedStreamBuf(originalStream.rdbuf()), std::ostream(this)
-{
-}
+PrefixedOStream::PrefixedOStream(const std::ostream& originalStream): PrefixedStreamBuf(originalStream.rdbuf()),
+                                                                      std::ostream(this) {}
