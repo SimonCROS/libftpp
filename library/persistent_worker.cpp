@@ -53,7 +53,12 @@ PersistentWorker::PersistentWorker()
 PersistentWorker::~PersistentWorker()
 {
     m_stop = true;
-    m_conditionVariable.notify_all();
+
+    {
+        std::unique_lock lock(m_workerMutex);
+        m_conditionVariable.notify_all();
+    }
+
     if (m_thread.joinable())
         m_thread.join();
 }
