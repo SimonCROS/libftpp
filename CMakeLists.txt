@@ -30,6 +30,12 @@ add_library(libftpp STATIC
         library/worker_pool.hpp
         library/persistent_worker.cpp
         library/persistent_worker.hpp
+        library/message.cpp
+        library/message.hpp
+        library/client.cpp
+        library/client.hpp
+        library/server.cpp
+        library/server.hpp
 )
 target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
 target_include_directories(libftpp PUBLIC
