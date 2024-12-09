@@ -142,11 +142,26 @@ auto Server::update() -> void
 
         auto result = incomingRequest(it);
         if(!result) {
-            removeClient(m_fdToClient[it->fd]);
+            removeClient(it->fd);
             it = m_pollfds.erase(it);
         }
         else ++it;
     }
+}
+
+auto Server::addClient(const int fd) -> client_id_t
+{
+    const size_t id = m_nextClientId;
+
+    m_fdToClient[fd] = id;
+    m_clientToFd[id] = fd;
+    ++m_nextClientId;
+    return id;
+}
+
+auto Server::removeClient(int fd) -> void
+{
+    auto it = m_fdToClient.find(fd);
 }
 
 auto Server::acceptIncomingConnection() -> void
@@ -168,7 +183,7 @@ auto Server::acceptIncomingConnection() -> void
     while (newFd != -1);
 }
 
-auto Server::incomingRequest(const size_t index)
+auto Server::incomingRequest(const std::vector<pollfd>::const_iterator& it) const
 #if __cpp_lib_expected >= 202211L
     -> std::expected<DataBuffer, int>
 #else
@@ -192,7 +207,7 @@ auto Server::incomingRequest(const size_t index)
     ssize_t recvResult;
     do
     {
-        recvResult = recv(m_pollfds[index].fd, buffer, bufferSize, 0);
+        recvResult = recv(it->fd, buffer, bufferSize, 0);
         if (recvResult == 0)
 #if __cpp_lib_expected >= 202211L
             return std::unexpected(-1);

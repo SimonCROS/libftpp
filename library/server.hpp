@@ -25,9 +25,12 @@
 
 class Server
 {
+public:
+    using client_id_t = size_t;
+
 private:
     bool m_running;
-    size_t m_nextClientId = 1;
+    client_id_t m_nextClientId = 1;
 
     int m_serverFd = -1;
     std::vector<pollfd> m_pollfds;
@@ -56,8 +59,11 @@ public:
     auto update() -> void;
 
 private:
+    auto addClient(int fd) -> client_id_t;
+    auto removeClient(int fd) -> void;
+
     auto acceptIncomingConnection() -> void;
-    [[nodiscard]] auto incomingRequest(size_t index)
+    [[nodiscard]] auto incomingRequest(const std::vector<pollfd>::const_iterator& it) const
 #if __cpp_lib_expected >= 202211L
         -> std::expected<DataBuffer, int>;
 #else
