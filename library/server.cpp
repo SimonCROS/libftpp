@@ -131,7 +131,8 @@ auto Server::update() -> void
     poll(m_pollfds.data(), m_pollfds.size(), -1);
 
     auto it = m_pollfds.begin();
-    while(it != m_pollfds.end()) {
+    while (it != m_pollfds.end())
+    {
         if (it->revents == 0)
             continue;
         if (it->fd == m_serverFd)
@@ -140,12 +141,19 @@ auto Server::update() -> void
             continue;
         }
 
-        auto result = incomingRequest(it);
-        if(!result) {
+        auto result = incomingRequest(it->fd);
+        if (!result)
+        {
+            // TODO better checks on expected error
             removeClient(it->fd);
             it = m_pollfds.erase(it);
         }
-        else ++it;
+        else
+        {
+            auto clientId = m_fdToClientId[it->fd];
+
+            ++it;
+        }
     }
 }
 
@@ -153,15 +161,19 @@ auto Server::addClient(const int fd) -> client_id_t
 {
     const size_t id = m_nextClientId;
 
-    m_fdToClient[fd] = id;
-    m_clientToFd[id] = fd;
+    m_fdToClientId[fd] = id;
+    m_clients.try_emplace(id, fd);
     ++m_nextClientId;
     return id;
 }
 
-auto Server::removeClient(int fd) -> void
+auto Server::removeClient(const int fd) -> void
 {
-    auto it = m_fdToClient.find(fd);
+    if (const auto it = m_fdToClient.find(fd); it != m_fdToClient.end())
+    {
+        m_clientToFd.erase(it->second);
+        m_fdToClient.erase(it);
+    }
 }
 
 auto Server::acceptIncomingConnection() -> void
@@ -183,7 +195,7 @@ auto Server::acceptIncomingConnection() -> void
     while (newFd != -1);
 }
 
-auto Server::incomingRequest(const std::vector<pollfd>::const_iterator& it) const
+auto Server::incomingRequest(const int fd) const
 #if __cpp_lib_expected >= 202211L
     -> std::expected<DataBuffer, int>
 #else
@@ -207,7 +219,7 @@ auto Server::incomingRequest(const std::vector<pollfd>::const_iterator& it) cons
     ssize_t recvResult;
     do
     {
-        recvResult = recv(it->fd, buffer, bufferSize, 0);
+        recvResult = recv(fd, buffer, bufferSize, 0);
         if (recvResult == 0)
 #if __cpp_lib_expected >= 202211L
             return std::unexpected(-1);

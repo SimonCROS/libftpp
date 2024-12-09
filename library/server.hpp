@@ -4,6 +4,7 @@
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
+#include <memory>
 
 #if __has_include(<sys/socket.h>) \
     && __has_include(<netinet/in.h>) \
@@ -28,14 +29,19 @@ class Server
 public:
     using client_id_t = size_t;
 
+    struct Client
+    {
+        int fd;
+    };
+
 private:
     bool m_running;
     client_id_t m_nextClientId = 1;
 
     int m_serverFd = -1;
     std::vector<pollfd> m_pollfds;
-    std::unordered_map<size_t, int> m_clientToFd;
-    std::unordered_map<int, size_t> m_fdToClient;
+    std::unordered_map<int, size_t> m_fdToClientId;
+    std::unordered_map<size_t, Client> m_clients;
 
     std::unordered_map<int, std::function<void(long long& clientID, const Message& msg)>> m_actions;
     std::unordered_map<int, std::function<void(long long& clientID, Message& msg)>> m_actionsNonConst;
@@ -63,7 +69,7 @@ private:
     auto removeClient(int fd) -> void;
 
     auto acceptIncomingConnection() -> void;
-    [[nodiscard]] auto incomingRequest(const std::vector<pollfd>::const_iterator& it) const
+    [[nodiscard]] auto incomingRequest(int fd) const
 #if __cpp_lib_expected >= 202211L
         -> std::expected<DataBuffer, int>;
 #else
