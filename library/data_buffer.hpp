@@ -26,6 +26,9 @@ public:
 
     DataBuffer() = default;
 
+    [[nodiscard]] auto size() const -> container_type::size_type;
+    [[nodiscard]] auto empty() const -> bool;
+
     auto pushBytes(const void* data, std::size_t size) -> void;
 
     [[nodiscard]] auto frontBytes(std::size_t size) -> std::ranges::subrange<container_type::const_iterator>;

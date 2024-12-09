@@ -4,20 +4,66 @@
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
+
+#if __has_include(<sys/socket.h>) \
+    && __has_include(<netinet/in.h>) \
+    && __has_include(<fcntl.h>) \
+    && __has_include(<unistd.h>) \
+    && __has_include(<poll.h>)
+
+#include <version>
 #include <functional>
+#if __cpp_lib_expected >= 202211L
+#include <expected>
+#else
+#include <optional>
+#endif
+
+#include <poll.h>
 
 #include "message.hpp"
 
 class Server
 {
+private:
+    bool m_running;
+    size_t m_nextClientId = 1;
+
+    int m_serverFd = -1;
+    std::vector<pollfd> m_pollfds;
+    std::unordered_map<size_t, int> m_clientToFd;
+    std::unordered_map<int, size_t> m_fdToClient;
+
+    std::unordered_map<int, std::function<void(long long& clientID, const Message& msg)>> m_actions;
+    std::unordered_map<int, std::function<void(long long& clientID, Message& msg)>> m_actionsNonConst;
+
 public:
+    ~Server();
+
     auto start(const size_t& p_port) -> void;
+    auto stop() -> void;
+    auto defineAction(int messageType,
+                      const std::function<void(long long& clientID, Message& msg)>& action) -> void;
+    auto defineAction(const Message::Type& messageType,
+                      const std::function<void(long long& clientID, Message& msg)>& action) -> void;
+    auto defineAction(int messageType,
+                      const std::function<void(long long& clientID, const Message& msg)>& action) -> void;
     auto defineAction(const Message::Type& messageType,
                       const std::function<void(long long& clientID, const Message& msg)>& action) -> void;
     auto sendTo(const Message& message, long long clientID) -> void;
     auto sendToArray(const Message& message, std::vector<long long> clientIDs) -> void;
     auto sendToAll(const Message& message) -> void;
     auto update() -> void;
+
+private:
+    auto acceptIncomingConnection() -> void;
+    [[nodiscard]] auto incomingRequest(size_t index)
+#if __cpp_lib_expected >= 202211L
+        -> std::expected<DataBuffer, int>;
+#else
+        -> std::optional<DataBuffer>;
+#endif
 };
 
+#endif
 #endif //SERVER_HPP

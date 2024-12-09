@@ -13,6 +13,16 @@ const char* DataBuffer::DataDeserializationException::what() const noexcept
     return "Failed to retrieve data from buffer";
 }
 
+auto DataBuffer::size() const -> size_t
+{
+    return m_bytes.size();
+}
+
+auto DataBuffer::empty() const -> bool
+{
+    return m_bytes.empty();
+}
+
 auto DataBuffer::pushBytes(const void* data, const std::size_t size) -> void
 {
     assert(data != nullptr);

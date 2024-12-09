@@ -4,6 +4,7 @@
 
 #ifndef PERSISTENT_WORKER_HPP
 #define PERSISTENT_WORKER_HPP
+#include <version>
 #include <condition_variable>
 #include <functional>
 #include <mutex>

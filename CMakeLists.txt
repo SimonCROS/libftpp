@@ -30,6 +30,8 @@ add_library(libftpp STATIC
         library/worker_pool.hpp
         library/persistent_worker.cpp
         library/persistent_worker.hpp
+
+        library/network.hpp
         library/message.cpp
         library/message.hpp
         library/client.cpp
