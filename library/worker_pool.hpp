@@ -13,7 +13,7 @@
 class WorkerPool
 {
 private:
-    std::atomic<bool> m_stop{false};
+    std::atomic_bool m_stop{false};
     std::vector<std::thread> m_threads;
 
     ThreadSafeQueue<std::function<void()>> m_jobs;

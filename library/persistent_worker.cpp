@@ -14,7 +14,7 @@ auto PersistentWorker::worker() -> void
         // Don't try to iterate on an empty set
         {
             // Scope for std::unique_lock
-            std::unique_lock lock(m_workerMutex);
+            std::unique_lock lock{m_workerMutex};
             m_conditionVariable.wait(lock, [this]
             {
                 std::scoped_lock s_lock{m_dataMutex};

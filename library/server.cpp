@@ -16,6 +16,9 @@
 #include <poll.h>
 #include <netinet/in.h>
 
+#include <cstring>
+#include <iostream>
+
 #include "server.hpp"
 #include "data_buffer.hpp"
 
@@ -26,16 +29,20 @@ Server::~Server()
 
 auto Server::start(const size_t& p_port) -> void
 {
+    if (m_running)
+        return;
+
     const int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd == -1)
     {
+        std::cerr << "Failed to start server: " << strerror(errno) << std::endl;
         close(fd);
         return;
     }
 
-    const int fcntlResult = fcntl(fd, F_SETFL, O_NONBLOCK);
-    if (fcntlResult == -1)
+    if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
     {
+        std::cerr << "Failed to start server: " << strerror(errno) << std::endl;
         close(fd);
         return;
     }
@@ -49,16 +56,16 @@ auto Server::start(const size_t& p_port) -> void
         .sin_zero = {},
     };
 
-    const int bindResult = bind(fd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
-    if (bindResult == -1)
+    if (bind(fd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == -1)
     {
+        std::cerr << "Failed to start server: " << strerror(errno) << std::endl;
         close(fd);
         return;
     }
 
-    const int listenResult = listen(fd, 5);
-    if (listenResult == -1)
+    if (listen(fd, 5) == -1)
     {
+        std::cerr << "Failed to start server: " << strerror(errno) << std::endl;
         close(fd);
         return;
     }
@@ -66,19 +73,25 @@ auto Server::start(const size_t& p_port) -> void
     m_serverFd = fd;
     m_pollfds.emplace_back(fd, POLLIN);
     m_running = true;
+
+    m_thread = std::thread(&Server::loop, this);
 }
 
 auto Server::stop() -> void
 {
+    if (!m_running)
+        return;
+
     m_running = false;
+    m_thread.join();
     for (const auto& pfd : m_pollfds)
     {
         shutdown(pfd.fd, SHUT_RDWR);
         close(pfd.fd);
     }
     m_pollfds.clear();
-    m_clientToFd.clear();
-    m_fdToClient.clear();
+    m_clients.clear();
+    m_fdToClientId.clear();
     m_serverFd = -1;
 }
 
@@ -125,41 +138,97 @@ auto Server::sendToAll(const Message& message) -> void
 
 auto Server::update() -> void
 {
-    if (!m_running)
-        return;
-
-    poll(m_pollfds.data(), m_pollfds.size(), -1);
-
-    auto it = m_pollfds.begin();
-    while (it != m_pollfds.end())
+    auto it = m_clients.begin();
+    while (it != m_clients.end())
     {
-        if (it->revents == 0)
-            continue;
-        if (it->fd == m_serverFd)
-        {
-            acceptIncomingConnection();
-            continue;
-        }
+        long long id = it->first;
+        ServerClient& client = it->second;
 
-        auto result = incomingRequest(it->fd);
-        if (!result)
+        while (!client.messages.empty())
         {
-            // TODO better checks on expected error
-            removeClient(it->fd);
-            it = m_pollfds.erase(it);
+            Message& message = client.messages.front();
+
+            if (auto foundIt = m_actions.find(message.type()); foundIt != m_actions.end())
+            {
+                std::invoke(foundIt->second, id, message);
+            }
+            if (auto foundIt = m_actionsNonConst.find(message.type()); foundIt != m_actionsNonConst.end())
+            {
+                std::invoke(foundIt->second, id, message);
+            }
+
+            client.messages.pop();
         }
+        if (client.fd == -1)
+            it = m_clients.erase(it);
         else
-        {
-            auto clientId = m_fdToClientId[it->fd];
-
             ++it;
+    }
+}
+
+auto Server::loop() -> void
+{
+    std::vector<pollfd> added;
+    added.reserve(4);
+
+    while (m_running)
+    {
+        poll(m_pollfds.data(), m_pollfds.size(), 0);
+
+        auto it = m_pollfds.begin();
+        while (it != m_pollfds.end())
+        {
+            if (it->revents == 0)
+            {
+                ++it;
+                continue;
+            }
+            if (it->fd == m_serverFd)
+            {
+                added = std::move(acceptIncomingConnection());
+                ++it;
+                continue;
+            }
+
+            auto result = incomingRequest(it->fd);
+            if (!result)
+            {
+                // TODO better checks on expected error
+                disconnectClient(it->fd);
+                it = m_pollfds.erase(it);
+            }
+            else
+            {
+                int type;
+                if (result->size() < sizeof(type))
+                {
+                    ++it;
+                    continue;
+                }
+
+                const auto ptr = static_cast<uint8_t*>(static_cast<void*>(&type));
+                std::ranges::copy_n(result->begin(), sizeof(type), ptr);
+                result->erase(result->begin(), result->begin() + sizeof(type));
+
+                DataBuffer buffer;
+                buffer.pushBytes(result->data(), result->size());
+
+                auto clientId = m_fdToClientId[it->fd];
+                m_clients[clientId].messages.push(Message(type, std::move(buffer)));
+                ++it;
+            }
+        }
+        if (!added.empty())
+        {
+            m_pollfds.insert(m_pollfds.end(), std::make_move_iterator(added.begin()), std::make_move_iterator(added.end()));
+            added.clear();
         }
     }
 }
 
 auto Server::addClient(const int fd) -> client_id_t
 {
-    const size_t id = m_nextClientId;
+    const client_id_t id = m_nextClientId;
 
     m_fdToClientId[fd] = id;
     m_clients.try_emplace(id, fd);
@@ -167,20 +236,35 @@ auto Server::addClient(const int fd) -> client_id_t
     return id;
 }
 
-auto Server::removeClient(const int fd) -> void
+auto Server::disconnectClient(const int fd) -> void
 {
-    if (const auto it = m_fdToClient.find(fd); it != m_fdToClient.end())
+    if (const auto it = m_fdToClientId.find(fd); it != m_fdToClientId.end())
     {
-        m_clientToFd.erase(it->second);
-        m_fdToClient.erase(it);
+        shutdown(fd, SHUT_RDWR);
+        close(fd);
+        m_clients[it->second].fd = -1;
+        m_fdToClientId.erase(it);
     }
 }
 
-auto Server::acceptIncomingConnection() -> void
+auto Server::removeClient(const client_id_t id) -> bool
+{
+    if (const auto it = m_clients.find(id); it != m_clients.end())
+    {
+        m_fdToClientId.erase(it->second.fd);
+        m_clients.erase(it);
+        return true;
+    }
+    return false;
+}
+
+auto Server::acceptIncomingConnection() -> std::vector<pollfd>
 {
     // ReSharper disable once CppDFAConstantConditions CppDFAUnreachableCode
     if (!m_running)
-        return;
+        return {};
+
+    std::vector<pollfd> added;
 
     int newFd;
     do
@@ -189,17 +273,27 @@ auto Server::acceptIncomingConnection() -> void
         if (newFd < 0)
             break;
 
-        m_pollfds.emplace_back(newFd, POLLIN);
+        if (fcntl(newFd, F_SETFL, fcntl(newFd, F_GETFL, 0) | O_NONBLOCK) == -1)
+        {
+            std::cerr << "Failed to accept new user: " << strerror(errno) << std::endl;
+            shutdown(newFd, O_RDWR);
+            close(newFd);
+            continue;
+        }
+
+        added.emplace_back(newFd, POLLIN);
         addClient(newFd);
     }
     while (newFd != -1);
+
+    return added;
 }
 
 auto Server::incomingRequest(const int fd) const
 #if __cpp_lib_expected >= 202211L
-    -> std::expected<DataBuffer, int>
+    -> std::expected<std::vector<uint8_t>, int>
 #else
-    -> std::optional<DataBuffer>
+    -> std::optional<std::vector<uint8_t>>
 #endif
 {
     // ReSharper disable once CppDFAConstantConditions CppDFAUnreachableCode
@@ -213,8 +307,8 @@ auto Server::incomingRequest(const int fd) const
     constexpr size_t bufferSize = 50;
     static_assert(bufferSize > 1);
 
-    char buffer[bufferSize];
-    DataBuffer bytes;
+    uint8_t buffer[bufferSize];
+    std::vector<uint8_t> bytes;
 
     ssize_t recvResult;
     do
@@ -227,7 +321,7 @@ auto Server::incomingRequest(const int fd) const
             return std::nullopt;
 #endif
         if (recvResult > 0)
-            bytes.pushBytes(buffer, recvResult);
+            bytes.insert(bytes.end(), buffer, buffer + recvResult);
     }
     while (recvResult != -1);
 

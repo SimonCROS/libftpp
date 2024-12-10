@@ -17,7 +17,7 @@
 class PersistentWorker
 {
 private:
-    std::atomic<bool> m_stop{false};
+    std::atomic_bool m_stop{false};
     std::thread m_thread;
 
     std::mutex m_dataMutex;

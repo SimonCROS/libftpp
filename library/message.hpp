@@ -6,11 +6,21 @@
 #define MESSAGE_HPP
 #include "data_buffer.hpp"
 
+class Client;
+class Server;
+
 class Message
 {
+    friend class Client;
+    friend class Server;
+    friend auto operator<<(DataBuffer& buffer, const Message& value) -> DataBuffer&;
+    friend auto operator>>(DataBuffer& buffer, const Message& value) -> DataBuffer&;
+
 private:
     int m_type;
     DataBuffer m_data;
+
+    Message(int type, DataBuffer&& data);
 
 public:
     enum Type: int
@@ -39,5 +49,9 @@ public:
         return *this;
     }
 };
+
+auto operator<<(DataBuffer& buffer, const Message& value) -> DataBuffer&;
+
+auto operator>>(DataBuffer& buffer, Message& value) -> DataBuffer&;
 
 #endif //MESSAGE_HPP

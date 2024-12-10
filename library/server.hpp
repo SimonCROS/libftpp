@@ -5,6 +5,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 #include <memory>
+#include <queue>
 
 #if __has_include(<sys/socket.h>) \
     && __has_include(<netinet/in.h>) \
@@ -21,27 +22,30 @@
 #endif
 
 #include <poll.h>
+#include <thread>
 
 #include "message.hpp"
 
 class Server
 {
 public:
-    using client_id_t = size_t;
-
-    struct Client
-    {
-        int fd;
-    };
+    using client_id_t = long long;
 
 private:
-    bool m_running;
+    struct ServerClient
+    {
+        int fd = -1;
+        std::queue<Message> messages;
+    };
+
+    std::atomic_bool m_running = false;
     client_id_t m_nextClientId = 1;
+    std::thread m_thread;
 
     int m_serverFd = -1;
     std::vector<pollfd> m_pollfds;
-    std::unordered_map<int, size_t> m_fdToClientId;
-    std::unordered_map<size_t, Client> m_clients;
+    std::unordered_map<int, client_id_t> m_fdToClientId;
+    std::unordered_map<client_id_t, ServerClient> m_clients;
 
     std::unordered_map<int, std::function<void(long long& clientID, const Message& msg)>> m_actions;
     std::unordered_map<int, std::function<void(long long& clientID, Message& msg)>> m_actionsNonConst;
@@ -65,15 +69,17 @@ public:
     auto update() -> void;
 
 private:
+    auto loop() -> void;
     auto addClient(int fd) -> client_id_t;
-    auto removeClient(int fd) -> void;
+    auto disconnectClient(int fd) -> void;
+    auto removeClient(client_id_t id) -> bool;
 
-    auto acceptIncomingConnection() -> void;
+    auto acceptIncomingConnection() -> std::vector<pollfd>;
     [[nodiscard]] auto incomingRequest(int fd) const
 #if __cpp_lib_expected >= 202211L
-        -> std::expected<DataBuffer, int>;
+        -> std::expected<std::vector<uint8_t>, int>;
 #else
-        -> std::optional<DataBuffer>;
+        -> std::optional<std::vector<uint8_t>>;
 #endif
 };
 
