@@ -2,11 +2,14 @@
 // Created by Simon Cros on 06/12/2024.
 //
 
+#include <ranges>
 #if __has_include(<sys/socket.h>) \
     && __has_include(<netinet/in.h>) \
     && __has_include(<fcntl.h>) \
     && __has_include(<unistd.h>) \
     && __has_include(<poll.h>)
+
+#include "thread_safe_iostream.hpp"
 
 #include <string>
 #include <cerrno>
@@ -119,21 +122,43 @@ auto Server::defineAction(const Message::Type& messageType,
     defineAction(static_cast<int>(messageType), action);
 }
 
-auto Server::sendTo(const Message& message, long long clientID) -> void
+auto Server::sendTo(const Message& message, const long long clientID) -> void
 {
-    (void)message;
-    (void)clientID;
+    const auto bytes = message.serialize();
+    if (const auto o_client = getClientById(clientID))
+    {
+        if (o_client->get().fd > -1)
+        {
+            ::send(o_client->get().fd, bytes.data(), bytes.size(), 0);
+        }
+    }
 }
 
-auto Server::sendToArray(const Message& message, std::vector<long long> clientIDs) -> void
+auto Server::sendToArray(const Message& message, std::vector<long long> clientIDs) -> void // NOLINT(*-unnecessary-value-param) (signature requested in the project)
 {
-    (void)message;
-    (void)clientIDs;
+    const auto bytes = message.serialize();
+    for (const auto id : clientIDs)
+    {
+        if (const auto o_client = getClientById(id))
+        {
+            if (o_client->get().fd > -1)
+            {
+                ::send(o_client->get().fd, bytes.data(), bytes.size(), 0);
+            }
+        }
+    }
 }
 
 auto Server::sendToAll(const Message& message) -> void
 {
-    (void)message;
+    const auto bytes = message.serialize();
+    for (const auto& client : std::views::values(m_clients))
+    {
+        if (client.fd > -1)
+        {
+            ::send(client.fd, bytes.data(), bytes.size(), 0);
+        }
+    }
 }
 
 auto Server::update() -> void
@@ -150,11 +175,25 @@ auto Server::update() -> void
 
             if (auto foundIt = m_actions.find(message.type()); foundIt != m_actions.end())
             {
-                std::invoke(foundIt->second, id, message);
+                try
+                {
+                    std::invoke(foundIt->second, id, message);
+                }
+                catch (const std::exception& ex)
+                {
+                    threadSafeCout << "Catch exception: " << ex.what() << std::endl;
+                }
             }
             if (auto foundIt = m_actionsNonConst.find(message.type()); foundIt != m_actionsNonConst.end())
             {
-                std::invoke(foundIt->second, id, message);
+                try
+                {
+                    std::invoke(foundIt->second, id, message);
+                }
+                catch (const std::exception& ex)
+                {
+                    threadSafeCout << "Catch exception: " << ex.what() << std::endl;
+                }
             }
 
             client.messages.pop();
@@ -173,7 +212,11 @@ auto Server::loop() -> void
 
     while (m_running)
     {
-        poll(m_pollfds.data(), m_pollfds.size(), 0);
+        if (poll(m_pollfds.data(), m_pollfds.size(), 0) == -1)
+        {
+            std::this_thread::yield();
+            continue;
+        }
 
         auto it = m_pollfds.begin();
         while (it != m_pollfds.end())
@@ -190,8 +233,8 @@ auto Server::loop() -> void
                 continue;
             }
 
-            auto result = incomingRequest(it->fd);
-            if (!result)
+            auto e_bytes = incomingRequest(it->fd);
+            if (!e_bytes)
             {
                 // TODO better checks on expected error
                 disconnectClient(it->fd);
@@ -199,31 +242,43 @@ auto Server::loop() -> void
             }
             else
             {
-                int type;
-                if (result->size() < sizeof(type))
+                if (auto o_message = Message::deserialize(*e_bytes))
                 {
-                    ++it;
-                    continue;
+                    if (const auto o_client = getClientByFd(it->fd))
+                    {
+                        o_client->get().messages.push(std::move(*o_message));
+                    }
                 }
-
-                const auto ptr = static_cast<uint8_t*>(static_cast<void*>(&type));
-                std::ranges::copy_n(result->begin(), sizeof(type), ptr);
-                result->erase(result->begin(), result->begin() + sizeof(type));
-
-                DataBuffer buffer;
-                buffer.pushBytes(result->data(), result->size());
-
-                auto clientId = m_fdToClientId[it->fd];
-                m_clients[clientId].messages.push(Message(type, std::move(buffer)));
                 ++it;
             }
         }
         if (!added.empty())
         {
-            m_pollfds.insert(m_pollfds.end(), std::make_move_iterator(added.begin()), std::make_move_iterator(added.end()));
+            m_pollfds.insert(m_pollfds.end(), std::make_move_iterator(added.begin()),
+                             std::make_move_iterator(added.end()));
             added.clear();
         }
+
+        std::this_thread::yield();
     }
+}
+
+auto Server::getClientByFd(const int fd) -> std::optional<std::reference_wrapper<ServerClient>>
+{
+    if (const auto it = m_fdToClientId.find(fd); it != m_fdToClientId.end())
+    {
+        return m_clients[it->second];
+    }
+    return std::nullopt;
+}
+
+auto Server::getClientById(const client_id_t id) -> std::optional<std::reference_wrapper<ServerClient>>
+{
+    if (const auto it = m_clients.find(id); it != m_clients.end())
+    {
+        return it->second;
+    }
+    return std::nullopt;
 }
 
 auto Server::addClient(const int fd) -> client_id_t

@@ -23,6 +23,16 @@ auto DataBuffer::empty() const -> bool
     return m_bytes.empty();
 }
 
+auto DataBuffer::cbegin() const -> container_type::const_iterator
+{
+    return m_bytes.cbegin();
+}
+
+auto DataBuffer::cend() const -> container_type::const_iterator
+{
+    return m_bytes.cend();
+}
+
 auto DataBuffer::pushBytes(const void* data, const std::size_t size) -> void
 {
     assert(data != nullptr);

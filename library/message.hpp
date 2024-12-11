@@ -4,6 +4,7 @@
 
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
+
 #include "data_buffer.hpp"
 
 class Client;
@@ -48,6 +49,10 @@ public:
         m_data >> value;
         return *this;
     }
+
+    [[nodiscard]] auto serialize() const -> std::vector<uint8_t>;
+
+    [[nodiscard]] static auto deserialize(const std::vector<uint8_t>& bytes) -> std::optional<Message>;
 };
 
 auto operator<<(DataBuffer& buffer, const Message& value) -> DataBuffer&;

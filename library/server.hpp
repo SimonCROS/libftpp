@@ -15,14 +15,13 @@
 
 #include <version>
 #include <functional>
+#include <thread>
+#include <optional>
 #if __cpp_lib_expected >= 202211L
 #include <expected>
-#else
-#include <optional>
 #endif
 
 #include <poll.h>
-#include <thread>
 
 #include "message.hpp"
 
@@ -70,6 +69,10 @@ public:
 
 private:
     auto loop() -> void;
+
+    auto getClientByFd(int fd) -> std::optional<std::reference_wrapper<ServerClient>>;
+    auto getClientById(client_id_t id) -> std::optional<std::reference_wrapper<ServerClient>>;
+
     auto addClient(int fd) -> client_id_t;
     auto disconnectClient(int fd) -> void;
     auto removeClient(client_id_t id) -> bool;

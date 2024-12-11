@@ -28,6 +28,8 @@ public:
 
     [[nodiscard]] auto size() const -> container_type::size_type;
     [[nodiscard]] auto empty() const -> bool;
+    [[nodiscard]] auto cbegin() const -> container_type::const_iterator;
+    [[nodiscard]] auto cend() const -> container_type::const_iterator;
 
     auto pushBytes(const void* data, std::size_t size) -> void;
 
