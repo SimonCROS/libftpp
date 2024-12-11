@@ -124,6 +124,8 @@ auto Server::defineAction(const Message::Type& messageType,
 
 auto Server::sendTo(const Message& message, const long long clientID) -> void
 {
+    std::scoped_lock lock{m_clientAccessMutex};
+
     const auto bytes = message.serialize();
     if (const auto o_client = getClientById(clientID))
     {
@@ -136,6 +138,8 @@ auto Server::sendTo(const Message& message, const long long clientID) -> void
 
 auto Server::sendToArray(const Message& message, std::vector<long long> clientIDs) -> void // NOLINT(*-unnecessary-value-param) (signature requested in the project)
 {
+    std::scoped_lock lock{m_clientAccessMutex};
+
     const auto bytes = message.serialize();
     for (const auto id : clientIDs)
     {
@@ -151,6 +155,8 @@ auto Server::sendToArray(const Message& message, std::vector<long long> clientID
 
 auto Server::sendToAll(const Message& message) -> void
 {
+    std::scoped_lock lock{m_clientAccessMutex};
+
     const auto bytes = message.serialize();
     for (const auto& client : std::views::values(m_clients))
     {
@@ -163,6 +169,8 @@ auto Server::sendToAll(const Message& message) -> void
 
 auto Server::update() -> void
 {
+    std::scoped_lock lock{m_clientAccessMutex};
+
     auto it = m_clients.begin();
     while (it != m_clients.end())
     {
@@ -244,9 +252,10 @@ auto Server::loop() -> void
             {
                 if (auto o_message = Message::deserialize(*e_bytes))
                 {
+                    std::scoped_lock lock{m_clientAccessMutex};
                     if (const auto o_client = getClientByFd(it->fd))
                     {
-                        o_client->get().messages.push(std::move(*o_message));
+                        o_client->get().messages.emplace(std::move(*o_message));
                     }
                 }
                 ++it;
@@ -283,6 +292,8 @@ auto Server::getClientById(const client_id_t id) -> std::optional<std::reference
 
 auto Server::addClient(const int fd) -> client_id_t
 {
+    std::scoped_lock lock{m_clientAccessMutex};
+
     const client_id_t id = m_nextClientId;
 
     m_fdToClientId[fd] = id;
@@ -293,6 +304,8 @@ auto Server::addClient(const int fd) -> client_id_t
 
 auto Server::disconnectClient(const int fd) -> void
 {
+    std::scoped_lock lock{m_clientAccessMutex};
+
     if (const auto it = m_fdToClientId.find(fd); it != m_fdToClientId.end())
     {
         shutdown(fd, SHUT_RDWR);
@@ -304,6 +317,8 @@ auto Server::disconnectClient(const int fd) -> void
 
 auto Server::removeClient(const client_id_t id) -> bool
 {
+    std::scoped_lock lock{m_clientAccessMutex};
+
     if (const auto it = m_clients.find(id); it != m_clients.end())
     {
         m_fdToClientId.erase(it->second.fd);

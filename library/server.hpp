@@ -17,6 +17,7 @@
 #include <functional>
 #include <thread>
 #include <optional>
+#include <mutex>
 #if __cpp_lib_expected >= 202211L
 #include <expected>
 #endif
@@ -38,11 +39,14 @@ private:
     };
 
     std::atomic_bool m_running = false;
-    client_id_t m_nextClientId = 1;
     std::thread m_thread;
 
+    // Only used by server thread
     int m_serverFd = -1;
     std::vector<pollfd> m_pollfds;
+
+    std::recursive_mutex m_clientAccessMutex;
+    client_id_t m_nextClientId = 1;
     std::unordered_map<int, client_id_t> m_fdToClientId;
     std::unordered_map<client_id_t, ServerClient> m_clients;
 
