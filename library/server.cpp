@@ -23,7 +23,6 @@
 #include <iostream>
 
 #include "server.hpp"
-#include "data_buffer.hpp"
 
 Server::~Server()
 {
@@ -50,14 +49,10 @@ auto Server::start(const size_t& p_port) -> void
         return;
     }
 
-    sockaddr_in serverAddress{
-        .sin_family = AF_INET,
-        .sin_port = htons(p_port),
-        .sin_addr = {
-            .s_addr = INADDR_ANY
-        },
-        .sin_zero = {},
-    };
+    sockaddr_in serverAddress{};
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(p_port);
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(fd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == -1)
     {
@@ -136,7 +131,9 @@ auto Server::sendTo(const Message& message, const long long clientID) -> void
     }
 }
 
-auto Server::sendToArray(const Message& message, std::vector<long long> clientIDs) -> void // NOLINT(*-unnecessary-value-param) (signature requested in the project)
+// clientIds is not a reference as requested in the specifications
+auto Server::sendToArray(const Message& message,
+                         std::vector<long long> clientIDs) -> void // NOLINT(*-unnecessary-value-param)
 {
     std::scoped_lock lock{m_clientAccessMutex};
 
@@ -236,7 +233,7 @@ auto Server::loop() -> void
             }
             if (it->fd == m_serverFd)
             {
-                added = std::move(acceptIncomingConnection());
+                added = acceptIncomingConnection();
                 ++it;
                 continue;
             }
