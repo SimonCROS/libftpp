@@ -40,6 +40,7 @@ add_library(libftpp STATIC
         library/server.hpp
 
         library/mathematics.hpp
+        library/mathematics_concepts.hpp
         library/ivector2.hpp
         library/ivector3.hpp
         library/random_2_d_coordinate_generator.cpp

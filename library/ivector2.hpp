@@ -2,58 +2,13 @@
 // Created by simon on 15/12/2024.
 //
 
-#ifndef I_VECTOR_2_HPP
-#define I_VECTOR_2_HPP
+#ifndef IVECTOR2_HPP
+#define IVECTOR2_HPP
+
 #include <cmath>
 #include <concepts>
 
-template <class T, class U>
-concept addable_with = requires(T t, U u)
-{
-    t + u;
-};
-
-template <class T, class U>
-concept subtractable_with = requires(T t, U u)
-{
-    t - u;
-};
-
-template <class T, class U>
-concept multipliable_with = requires(T t, U u)
-{
-    t * u;
-};
-
-template <class T, class U>
-concept dividable_with = requires(T t, U u)
-{
-    t / u;
-};
-
-template <class T, class U>
-concept assign_addable_with = requires(T t, U u)
-{
-    t += u;
-};
-
-template <class T, class U>
-concept assign_subtractable_with = requires(T t, U u)
-{
-    t -= u;
-};
-
-template <class T, class U>
-concept assign_multipliable_with = requires(T t, U u)
-{
-    t *= u;
-};
-
-template <class T, class U>
-concept assign_dividable_with = requires(T t, U u)
-{
-    t /= u;
-};
+#include "mathematics_concepts.hpp"
 
 template <class TType>
 class IVector2
@@ -96,45 +51,57 @@ public:
         return !(*this == rhs);
     }
 
-    auto operator+=(const IVector2& rhs) -> IVector2&
+    template <class UType>
+        requires assign_addable_with<TType, const UType>
+    auto operator+=(const IVector2<UType>& rhs) -> IVector2&
     {
         x += rhs.x;
         y += rhs.y;
         return *this;
     }
 
-    auto operator-=(const IVector2& rhs) -> IVector2&
+    template <class UType>
+        requires assign_subtractable_with<TType, const UType>
+    auto operator-=(const IVector2<UType>& rhs) -> IVector2&
     {
         x -= rhs.x;
         y -= rhs.y;
         return *this;
     }
 
-    auto operator*=(const IVector2& rhs) -> IVector2&
+    template <class UType>
+        requires (!std::same_as<std::decay_t<UType>, IVector2>) && assign_multipliable_with<TType, const UType>
+    auto operator*=(const IVector2<UType>& rhs) -> IVector2&
     {
         x *= rhs.x;
         y *= rhs.y;
         return *this;
     }
 
-    auto operator*=(const TType& rhs) -> IVector2&
+    template <class UType>
+        requires assign_multipliable_with<TType, const UType>
+    auto operator*=(const UType&& rhs) -> IVector2&
     {
-        x *= rhs;
-        y *= rhs;
+        x *= std::forward<const UType>(rhs);
+        y *= std::forward<const UType>(rhs);
         return *this;
     }
 
-    auto operator/=(const IVector2& rhs) -> IVector2&
+    template <class UType>
+        requires (!std::same_as<std::decay_t<UType>, IVector2>) && assign_dividable_with<TType, const UType>
+    auto operator/=(const IVector2<UType>& rhs) -> IVector2&
     {
         x /= rhs.x;
         y /= rhs.y;
         return *this;
     }
 
-    auto operator/=(const TType& rhs) -> IVector2&
+    template <class UType>
+        requires assign_dividable_with<TType, const UType>
+    auto operator/=(const UType&& rhs) -> IVector2&
     {
-        x /= rhs;
-        y /= rhs;
+        x /= std::forward<const UType>(rhs);
+        y /= std::forward<const UType>(rhs);
         return *this;
     }
 
@@ -163,7 +130,7 @@ public:
         requires (!std::same_as<std::decay_t<UType>, IVector2>) && multipliable_with<TType, const UType>
     friend auto operator*(IVector2 lhs, const UType&& rhs) -> IVector2<decltype(lhs.x * rhs)>
     {
-        return {lhs.x * rhs, lhs.y * rhs};
+        return {lhs.x * std::forward<const UType>(rhs), lhs.y * std::forward<const UType>(rhs)};
     }
 
     template <class UType>
@@ -177,7 +144,7 @@ public:
         requires (!std::same_as<std::decay_t<UType>, IVector2>) && dividable_with<TType, const UType>
     friend auto operator/(IVector2 lhs, const UType&& rhs) -> IVector2<decltype(lhs.x / rhs)>
     {
-        return {lhs.x / rhs, lhs.y / rhs};
+        return {lhs.x / std::forward<const UType>(rhs), lhs.y / std::forward<const UType>(rhs)};
     }
 
     [[nodiscard]] auto length() const -> float requires std::convertible_to<TType, float>
@@ -196,4 +163,4 @@ public:
     }
 };
 
-#endif //I_VECTOR_2_HPP
+#endif //IVECTOR2_HPP

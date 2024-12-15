@@ -2,11 +2,13 @@
 // Created by simon on 15/12/2024.
 //
 
-#ifndef I_VECTOR_3_HPP
-#define I_VECTOR_3_HPP
+#ifndef IVECTOR3_HPP
+#define IVECTOR3_HPP
+
+#include "mathematics_concepts.hpp"
 
 class IVector3 {
 
 };
 
-#endif //I_VECTOR_3_HPP
+#endif //IVECTOR3_HPP
