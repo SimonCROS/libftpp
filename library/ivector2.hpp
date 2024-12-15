@@ -18,11 +18,11 @@ public:
 
     TType x, y;
 
-    IVector2() : x(0), y(0)
+    IVector2() requires std::default_initializable<TType> : x{}, y{}
     {
     }
 
-    IVector2(TType x, TType y) : x(x), y(y)
+    IVector2(TType x, TType y) requires std::copy_constructible<TType> : x(x), y(y)
     {
     }
 
@@ -149,7 +149,7 @@ public:
 
     [[nodiscard]] auto length() const -> float requires std::convertible_to<TType, float>
     {
-        return std::sqrt(static_cast<float>(this->x * this->x + this->y * this->y));
+        return std::sqrt(static_cast<float>(x * x + y * y));
     }
 
     [[nodiscard]] auto normalize() const -> IVector2<float> requires dividable_with<TType, float>
