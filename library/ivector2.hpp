@@ -14,7 +14,7 @@ concept addable_with = requires(T t, U u)
 };
 
 template <class T, class U>
-    concept subtractable_with = requires(T t, U u)
+concept subtractable_with = requires(T t, U u)
 {
     t - u;
 };
@@ -38,7 +38,7 @@ concept assign_addable_with = requires(T t, U u)
 };
 
 template <class T, class U>
-    concept assign_subtractable_with = requires(T t, U u)
+concept assign_subtractable_with = requires(T t, U u)
 {
     t -= u;
 };
@@ -160,37 +160,32 @@ public:
     }
 
     template <class UType>
-        requires multipliable_with<TType, const UType> && (!std::same_as<std::decay_t<UType>, IVector2>)
-    friend auto operator*(IVector2 lhs, const UType&& rhs) -> IVector2<decltype(lhs.x * rhs.x)>
+        requires (!std::same_as<std::decay_t<UType>, IVector2>) && multipliable_with<TType, const UType>
+    friend auto operator*(IVector2 lhs, const UType&& rhs) -> IVector2<decltype(lhs.x * rhs)>
     {
-        lhs *= std::forward<const UType>(rhs);
-        return lhs;
+        return {lhs.x * rhs, lhs.y * rhs};
     }
 
     template <class UType>
         requires dividable_with<TType, UType>
     friend auto operator/(IVector2 lhs, const IVector2<UType>& rhs) -> IVector2<decltype(lhs.x / rhs.x)>
     {
-        lhs /= rhs;
-        return lhs;
+        return {lhs.x / rhs.x, lhs.y / rhs.y};
     }
 
     template <class UType>
-        requires dividable_with<TType, const UType> && (!std::same_as<std::decay_t<UType>, IVector2>)
-    friend auto operator/(IVector2 lhs, const UType&& rhs) -> IVector2<decltype(lhs.x / rhs.x)>
+        requires (!std::same_as<std::decay_t<UType>, IVector2>) && dividable_with<TType, const UType>
+    friend auto operator/(IVector2 lhs, const UType&& rhs) -> IVector2<decltype(lhs.x / rhs)>
     {
-        lhs /= rhs;
-        return lhs;
+        return {lhs.x / rhs, lhs.y / rhs};
     }
 
-    [[nodiscard]] auto length() const -> float
-        requires std::convertible_to<TType, float>
+    [[nodiscard]] auto length() const -> float requires std::convertible_to<TType, float>
     {
         return std::sqrt(static_cast<float>(this->x * this->x + this->y * this->y));
     }
 
-    [[nodiscard]] auto normalize() const -> IVector2<float>
-        requires dividable_with<TType, float>
+    [[nodiscard]] auto normalize() const -> IVector2<float> requires dividable_with<TType, float>
     {
         return *this / length();
     }
