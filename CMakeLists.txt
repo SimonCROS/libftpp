@@ -38,6 +38,14 @@ add_library(libftpp STATIC
         library/client.hpp
         library/server.cpp
         library/server.hpp
+
+        library/mathematics.hpp
+        library/ivector2.hpp
+        library/ivector3.hpp
+        library/random_2_d_coordinate_generator.cpp
+        library/random_2_d_coordinate_generator.hpp
+        library/perlin_noise_2_d.cpp
+        library/perlin_noise_2_d.hpp
 )
 target_compile_options(libftpp PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
