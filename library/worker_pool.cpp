@@ -3,8 +3,9 @@
 //
 
 #include "worker_pool.hpp"
-
 #include "thread_safe_iostream.hpp"
+
+#include <format>
 
 auto WorkerPool::worker(const int id) -> void
 {

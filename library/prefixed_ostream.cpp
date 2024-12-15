@@ -5,13 +5,15 @@
 #include "prefixed_ostream.hpp"
 
 #include <iostream>
+#include <utility>
+#include <limits>
 
 PrefixedStreamBuf::PrefixedStreamBuf(std::streambuf* originalBuffer): m_originalBuffer(originalBuffer),
                                                                       m_atStartOfLine(true) {}
 
 auto PrefixedStreamBuf::setPrefix(const std::string& prefix) -> void
 {
-    if (prefix.size() > std::numeric_limits<std::streamsize>::max())
+    if (std::cmp_greater(prefix.size(), std::numeric_limits<std::streamsize>::max()))
         throw std::runtime_error("Prefix too long");
 
     m_prefix = prefix;

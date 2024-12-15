@@ -10,9 +10,6 @@
 #include <mutex>
 #include <unordered_map>
 #include <thread>
-#if __cpp_lib_associative_heterogeneous_insertion >= 202306L || __cpp_lib_associative_heterogeneous_erasure >= 202110L
-#include <string_view> // used only when addTask/removeTask feature check
-#endif
 
 class PersistentWorker
 {
@@ -32,13 +29,7 @@ public:
     ~PersistentWorker();
 
     auto addTask(const std::string& name, const std::function<void()>& jobToExecute) -> void;
-#if __cpp_lib_associative_heterogeneous_insertion >= 202306L
-    auto addTask(const std::string_view& name, const std::function<void()>& jobToExecute) -> void;
-#endif
     auto removeTask(const std::string& name) -> void;
-#if __cpp_lib_associative_heterogeneous_erasure >= 202110L
-    auto removeTask(const std::string_view& name) -> void;
-#endif
 };
 
 #endif //PERSISTENT_WORKER_HPP

@@ -64,13 +64,6 @@ PersistentWorker::~PersistentWorker()
 }
 
 auto PersistentWorker::addTask(const std::string& name, const std::function<void()>& jobToExecute) -> void
-#if __cpp_lib_associative_heterogeneous_insertion >= 202306L
-{
-    addTask(std::string_view(name), jobToExecute);
-}
-
-auto PersistentWorker::addTask(const std::string_view& name, const std::function<void()>& jobToExecute) -> void
-#endif
 {
     std::scoped_lock lock{m_dataMutex};
     // ignore, the prototype require a void return, and I don't want to throw for this
@@ -79,13 +72,6 @@ auto PersistentWorker::addTask(const std::string_view& name, const std::function
 }
 
 auto PersistentWorker::removeTask(const std::string& name) -> void
-#if __cpp_lib_associative_heterogeneous_erasure >= 202110L
-{
-    removeTask(std::string_view(name));
-}
-
-auto PersistentWorker::removeTask(const std::string_view& name) -> void
-#endif
 {
     std::scoped_lock lock{m_dataMutex};
     // ignore, the prototype require a void return, and I don't want to throw for this

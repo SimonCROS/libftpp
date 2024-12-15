@@ -39,7 +39,12 @@ add_library(libftpp STATIC
         library/server.cpp
         library/server.hpp
 )
-target_compile_options(libftpp PRIVATE -Wall -Wextra -Werror)
+target_compile_options(libftpp PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        -Wall -Wextra -Werror>
+        $<$<CXX_COMPILER_ID:MSVC>:
+        /W4 /WX>
+)
 target_include_directories(libftpp PUBLIC
         library
 )
