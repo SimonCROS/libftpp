@@ -26,13 +26,14 @@ public:
     {
     }
 
-    template <std::constructible_from<TType> UType>
+    template <class UType>
+        requires std::constructible_from<TType, UType>
     explicit IVector2(const IVector2<UType>& other) : x(other.x), y(other.y)
     {
     }
 
-    template <std::convertible_to<TType> UType>
-        requires (!std::constructible_from<TType>)
+    template <class UType>
+        requires (!std::constructible_from<TType, UType>)
     explicit IVector2(const IVector2<UType>& other)
     {
         x = static_cast<TType>(other.x);
@@ -70,7 +71,7 @@ public:
     }
 
     template <class UType>
-        requires (!std::same_as<std::decay_t<UType>, IVector2>) && assign_multipliable_with<TType, const UType>
+        requires assign_multipliable_with<TType, const UType>
     auto operator*=(const IVector2<UType>& rhs) -> IVector2&
     {
         x *= rhs.x;
@@ -79,7 +80,7 @@ public:
     }
 
     template <class UType>
-        requires assign_multipliable_with<TType, const UType>
+        requires (!std::same_as<std::decay_t<UType>, IVector2>) && assign_multipliable_with<TType, const UType>
     auto operator*=(const UType&& rhs) -> IVector2&
     {
         x *= std::forward<const UType>(rhs);
@@ -88,7 +89,7 @@ public:
     }
 
     template <class UType>
-        requires (!std::same_as<std::decay_t<UType>, IVector2>) && assign_dividable_with<TType, const UType>
+        requires assign_dividable_with<TType, const UType>
     auto operator/=(const IVector2<UType>& rhs) -> IVector2&
     {
         x /= rhs.x;
@@ -97,7 +98,7 @@ public:
     }
 
     template <class UType>
-        requires assign_dividable_with<TType, const UType>
+        requires (!std::same_as<std::decay_t<UType>, IVector2>) && assign_dividable_with<TType, const UType>
     auto operator/=(const UType&& rhs) -> IVector2&
     {
         x /= std::forward<const UType>(rhs);

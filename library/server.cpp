@@ -77,20 +77,10 @@ auto Server::start(const size_t& p_port) -> void
 
 auto Server::stop() -> void
 {
-    if (!m_running)
-        return;
-
     m_running = false;
-    m_thread.join();
-    for (const auto& pfd : m_pollfds)
-    {
-        shutdown(pfd.fd, SHUT_RDWR);
-        close(pfd.fd);
-    }
-    m_pollfds.clear();
-    m_clients.clear();
-    m_fdToClientId.clear();
-    m_serverFd = -1;
+    if (m_thread.joinable())
+        m_thread.join();
+    m_thread = {};
 }
 
 auto Server::defineAction(const int messageType,
@@ -218,10 +208,7 @@ auto Server::loop() -> void
     while (m_running)
     {
         if (poll(m_pollfds.data(), m_pollfds.size(), 0) == -1)
-        {
-            std::this_thread::yield();
-            continue;
-        }
+            break;
 
         auto it = m_pollfds.begin();
         while (it != m_pollfds.end())
@@ -238,23 +225,34 @@ auto Server::loop() -> void
                 continue;
             }
 
-            auto e_bytes = incomingRequest(it->fd);
-            if (!e_bytes)
+            if (it->revents & POLLIN)
             {
-                // TODO better checks on expected error
+                if (auto&& e_bytes = incomingRequest(it->fd))
+                {
+                    if (auto&& o_message = Message::deserialize(*e_bytes))
+                    {
+                        std::scoped_lock lock{m_clientAccessMutex};
+                        if (const auto o_client = getClientByFd(it->fd))
+                        {
+                            o_client->get().messages.emplace(std::move(*o_message));
+                        }
+                    }
+                }
+                else
+                {
+                    disconnectClient(it->fd);
+                    it = m_pollfds.erase(it);
+                    continue;
+                }
+            }
+
+            if (it->revents & POLLHUP)
+            {
                 disconnectClient(it->fd);
                 it = m_pollfds.erase(it);
             }
             else
             {
-                if (auto o_message = Message::deserialize(*e_bytes))
-                {
-                    std::scoped_lock lock{m_clientAccessMutex};
-                    if (const auto o_client = getClientByFd(it->fd))
-                    {
-                        o_client->get().messages.emplace(std::move(*o_message));
-                    }
-                }
                 ++it;
             }
         }
@@ -267,6 +265,18 @@ auto Server::loop() -> void
 
         std::this_thread::yield();
     }
+
+    std::scoped_lock lock{m_clientAccessMutex};
+    m_running = false;
+    for (const auto& pfd : m_pollfds)
+    {
+        shutdown(pfd.fd, SHUT_RDWR);
+        close(pfd.fd);
+    }
+    m_pollfds.clear();
+    m_clients.clear();
+    m_fdToClientId.clear();
+    m_serverFd = -1;
 }
 
 auto Server::getClientByFd(const int fd) -> std::optional<std::reference_wrapper<ServerClient>>
@@ -305,6 +315,7 @@ auto Server::disconnectClient(const int fd) -> void
 
     if (const auto it = m_fdToClientId.find(fd); it != m_fdToClientId.end())
     {
+        std::cerr << "Client disconnected (" << it->second << ")" << std::endl;
         shutdown(fd, SHUT_RDWR);
         close(fd);
         m_clients[it->second].fd = -1;
@@ -349,7 +360,8 @@ auto Server::acceptIncomingConnection() -> std::vector<pollfd>
         }
 
         added.emplace_back(newFd, POLLIN);
-        addClient(newFd);
+        auto id = addClient(newFd);
+        std::cerr << "Client connected (" << id << ")" << std::endl;
     }
     while (newFd != -1);
 

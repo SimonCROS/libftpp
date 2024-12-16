@@ -72,7 +72,7 @@ public:
     }
 
     template <class UType>
-        requires (!std::same_as<std::decay_t<UType>, IVector3>) && assign_multipliable_with<TType, const UType>
+        requires assign_multipliable_with<TType, const UType>
     auto operator*=(const IVector3<UType>& rhs) -> IVector3&
     {
         x *= rhs.x;
@@ -82,7 +82,7 @@ public:
     }
 
     template <class UType>
-        requires assign_multipliable_with<TType, const UType>
+        requires (!std::same_as<std::decay_t<UType>, IVector3>) && assign_multipliable_with<TType, const UType>
     auto operator*=(const UType&& rhs) -> IVector3&
     {
         x *= std::forward<const UType>(rhs);
@@ -92,7 +92,7 @@ public:
     }
 
     template <class UType>
-        requires (!std::same_as<std::decay_t<UType>, IVector3>) && assign_dividable_with<TType, const UType>
+        requires assign_dividable_with<TType, const UType>
     auto operator/=(const IVector3<UType>& rhs) -> IVector3&
     {
         x /= rhs.x;
@@ -102,7 +102,7 @@ public:
     }
 
     template <class UType>
-        requires assign_dividable_with<TType, const UType>
+        requires (!std::same_as<std::decay_t<UType>, IVector3>) && assign_dividable_with<TType, const UType>
     auto operator/=(const UType&& rhs) -> IVector3&
     {
         x /= std::forward<const UType>(rhs);
