@@ -6,7 +6,7 @@
 #define PERLIN_NOISE_2_D_HPP
 
 class PerlinNoise2D {
-
+    float sample(float x, float y);
 };
 
 #endif //PERLIN_NOISE_2_D_HPP

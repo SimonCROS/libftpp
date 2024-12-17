@@ -45,8 +45,8 @@ add_library(libftpp STATIC
         library/ivector3.hpp
         library/random_2d_coordinate_generator.cpp
         library/random_2d_coordinate_generator.hpp
-        library/perlin_noise_2_d.cpp
-        library/perlin_noise_2_d.hpp
+        library/perlin_noise_2d.cpp
+        library/perlin_noise_2d.hpp
 )
 target_compile_options(libftpp PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
