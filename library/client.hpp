@@ -4,7 +4,6 @@
 
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
-#include <queue>
 
 #if __has_include(<sys/socket.h>) \
     && __has_include(<netinet/in.h>) \
@@ -19,6 +18,7 @@
 #include <thread>
 #include <functional>
 #include <string>
+#include <queue>
 #include <poll.h>
 #if __cpp_lib_expected >= 202211L
 #include <expected>
@@ -35,7 +35,8 @@ private:
     pollfd m_clientPollfd = {};
 
     std::recursive_mutex m_clientAccessMutex;
-    std::queue<Message> m_messages;
+    std::queue<Message> m_in_messages;
+    std::queue<std::vector<u_int8_t>> m_out_messages;
 
     std::unordered_map<int, std::function<void(const Message& msg)>> m_actions;
     std::unordered_map<int, std::function<void(Message& msg)>> m_actionsNonConst;

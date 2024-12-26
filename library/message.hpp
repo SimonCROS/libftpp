@@ -26,8 +26,8 @@ private:
 public:
     enum Type: int
     {
-        GET,
-        UPDATE,
+        GET = 1,
+        UPDATE = 2,
     };
 
     explicit Message(int type);

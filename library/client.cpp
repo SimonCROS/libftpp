@@ -72,46 +72,17 @@ auto Client::connect(const std::string& address, const size_t& port) -> void
 
     m_running = true;
     m_clientPollfd.fd = fd;
-    m_clientPollfd.events = POLLIN | POLLOUT;
+    m_clientPollfd.events = POLLIN;
     m_clientPollfd.revents = {};
 
-    bool connected = false;
-    while (true)
-    {
-        if (poll(&m_clientPollfd, 1, 0) == -1)
-        {
-            threadSafeCout << "Cannot establish a connection:" << strerror(errno) << std::endl;
-            break;
-        }
-
-        if (m_clientPollfd.revents & (POLLERR | POLLHUP))
-        {
-            threadSafeCout << "Cannot establish a connection" << std::endl;
-            break;
-        }
-        if (m_clientPollfd.revents & POLLOUT) {
-            threadSafeCout << "Connected" << std::endl;
-            m_clientPollfd.events &= ~POLLOUT;
-            connected = true;
-            break;
-        }
-    }
-
-    if (connected)
-    {
-        m_thread = std::thread(&Client::loop, this);
-    }
-    else
-    {
-        m_running = false;
-        shutdown(m_clientPollfd.fd, SHUT_RDWR);
-        close(m_clientPollfd.fd);
-        m_clientPollfd = {};
-    }
+    m_thread = std::thread(&Client::loop, this);
 }
 
 auto Client::disconnect() -> void
 {
+    if (!m_running)
+        return;
+
     m_running = false;
     if (m_thread.joinable())
         m_thread.join();
@@ -146,17 +117,16 @@ auto Client::send(const Message& message) -> void
     if (m_clientPollfd.fd == -1)
         return;
 
-    const auto bytes = message.serialize();
-    ::send(m_clientPollfd.fd, bytes.data(), bytes.size(), 0);
+    m_out_messages.push(message.serialize());
 }
 
 auto Client::update() -> void
 {
     std::scoped_lock lock{m_clientAccessMutex};
 
-    while (!m_messages.empty())
+    while (!m_in_messages.empty())
     {
-        Message& message = m_messages.front();
+        Message& message = m_in_messages.front();
 
         if (auto foundIt = m_actions.find(message.type()); foundIt != m_actions.end())
         {
@@ -181,7 +151,7 @@ auto Client::update() -> void
             }
         }
 
-        m_messages.pop();
+        m_in_messages.pop();
     }
 }
 
@@ -190,10 +160,22 @@ auto Client::loop() -> void
     std::vector<pollfd> added;
     added.reserve(4);
 
-    while (m_running)
+    bool fatalError = false;
+    while (m_running && !fatalError)
     {
+        {
+            std::scoped_lock lock{m_clientAccessMutex};
+            if (m_out_messages.empty())
+                m_clientPollfd.events &= ~POLLOUT;
+            else
+                m_clientPollfd.events |= POLLOUT;
+        }
+
         if (poll(&m_clientPollfd, 1, 0) == -1)
+        {
+            fatalError = true;
             break;
+        }
 
         if (m_clientPollfd.revents & POLLIN)
         {
@@ -202,27 +184,41 @@ auto Client::loop() -> void
                 if (auto&& o_message = Message::deserialize(*e_bytes))
                 {
                     std::scoped_lock lock{m_clientAccessMutex};
-                    m_messages.emplace(std::move(*o_message));
+                    m_in_messages.emplace(std::move(*o_message));
                 }
+            }
+            else if (e_bytes.error() == 0)
+            {
+                threadSafeCout << "Connection closed" << std::endl;
+                fatalError = true;
             }
             else
             {
-                threadSafeCout << "Failed to read message." << std::endl;
-                break;
+                threadSafeCout << "Failed to read message" << std::endl;
             }
         }
 
-        if (m_clientPollfd.revents & (POLLERR | POLLHUP))
+        if (m_clientPollfd.revents & POLLOUT)
         {
-            threadSafeCout << "Connection lost" << std::endl;
-            break;
+            std::scoped_lock lock{m_clientAccessMutex};
+            while (!m_out_messages.empty())
+            {
+                auto& message = m_out_messages.front();
+                ::send(m_clientPollfd.fd, message.data(), message.size(), 0);
+                m_out_messages.pop();
+            }
+        }
+
+        if (m_clientPollfd.revents & (POLLERR | POLLHUP) && !fatalError)
+        {
+            threadSafeCout << "Failed to connect" << std::endl;
+            fatalError = true;
         }
 
         std::this_thread::yield();
     }
 
     std::scoped_lock lock{m_clientAccessMutex};
-    m_running = false;
     shutdown(m_clientPollfd.fd, SHUT_RDWR);
     close(m_clientPollfd.fd);
     m_clientPollfd = {};
@@ -255,7 +251,7 @@ auto Client::incomingRequest(const int fd) const
         recvResult = recv(fd, buffer, bufferSize, 0);
         if (recvResult == 0)
 #if __cpp_lib_expected >= 202211L
-            return std::unexpected(-1);
+            return std::unexpected(recvResult);
 #else
                 return std::nullopt;
 #endif

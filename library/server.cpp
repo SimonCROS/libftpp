@@ -42,6 +42,14 @@ auto Server::start(const size_t& p_port) -> void
         return;
     }
 
+    constexpr int on = 1;
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int)) == -1)
+    {
+        std::cerr << "Failed to start server: " << strerror(errno) << std::endl;
+        close(fd);
+        return;
+    }
+
     if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
     {
         std::cerr << "Failed to start server: " << strerror(errno) << std::endl;
@@ -77,6 +85,9 @@ auto Server::start(const size_t& p_port) -> void
 
 auto Server::stop() -> void
 {
+    if (!m_running)
+        return;
+
     m_running = false;
     if (m_thread.joinable())
         m_thread.join();
@@ -267,15 +278,19 @@ auto Server::loop() -> void
     }
 
     std::scoped_lock lock{m_clientAccessMutex};
-    m_running = false;
     for (const auto& pfd : m_pollfds)
     {
-        shutdown(pfd.fd, SHUT_RDWR);
-        close(pfd.fd);
+        if (pfd.fd != m_serverFd)
+        {
+            shutdown(pfd.fd, SHUT_RDWR);
+            close(pfd.fd);
+        }
     }
     m_pollfds.clear();
     m_clients.clear();
     m_fdToClientId.clear();
+
+    close(m_serverFd);
     m_serverFd = -1;
 }
 
@@ -315,7 +330,7 @@ auto Server::disconnectClient(const int fd) -> void
 
     if (const auto it = m_fdToClientId.find(fd); it != m_fdToClientId.end())
     {
-        std::cerr << "Client disconnected (" << it->second << ")" << std::endl;
+        threadSafeCout << "Client disconnected (" << it->second << ")" << std::endl;
         shutdown(fd, SHUT_RDWR);
         close(fd);
         m_clients[it->second].fd = -1;
@@ -361,7 +376,7 @@ auto Server::acceptIncomingConnection() -> std::vector<pollfd>
 
         added.emplace_back(newFd, POLLIN);
         auto id = addClient(newFd);
-        std::cerr << "Client connected (" << id << ")" << std::endl;
+        threadSafeCout << "Client connected (" << id << ")" << std::endl;
     }
     while (newFd != -1);
 
