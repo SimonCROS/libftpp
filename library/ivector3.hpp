@@ -82,12 +82,12 @@ public:
     }
 
     template <class UType>
-        requires (!std::same_as<std::decay_t<UType>, IVector3>) && assign_multipliable_with<TType, const UType>
-    auto operator*=(const UType&& rhs) -> IVector3&
+        requires (!std::same_as<std::decay_t<UType>, IVector3>) && assign_multipliable_with<TType, UType>
+    auto operator*=(UType&& rhs) -> IVector3&
     {
-        x *= std::forward<const UType>(rhs);
-        y *= std::forward<const UType>(rhs);
-        z *= std::forward<const UType>(rhs);
+        x *= std::forward<UType>(rhs);
+        y *= std::forward<UType>(rhs);
+        z *= std::forward<UType>(rhs);
         return *this;
     }
 
@@ -102,12 +102,12 @@ public:
     }
 
     template <class UType>
-        requires (!std::same_as<std::decay_t<UType>, IVector3>) && assign_dividable_with<TType, const UType>
-    auto operator/=(const UType&& rhs) -> IVector3&
+        requires (!std::same_as<std::decay_t<UType>, IVector3>) && assign_dividable_with<TType, UType>
+    auto operator/=(UType&& rhs) -> IVector3&
     {
-        x /= std::forward<const UType>(rhs);
-        y /= std::forward<const UType>(rhs);
-        z /= std::forward<const UType>(rhs);
+        x /= std::forward<UType>(rhs);
+        y /= std::forward<UType>(rhs);
+        z /= std::forward<UType>(rhs);
         return *this;
     }
 
@@ -133,10 +133,10 @@ public:
     }
 
     template <class UType>
-        requires (!std::same_as<std::decay_t<UType>, IVector3>) && multipliable_with<TType, const UType>
-    friend auto operator*(IVector3 lhs, const UType&& rhs) -> IVector3<decltype(lhs.x * rhs)>
+        requires (!std::same_as<std::decay_t<UType>, IVector3>) && multipliable_with<TType, UType>
+    friend auto operator*(IVector3 lhs, UType&& rhs) -> IVector3<decltype(lhs.x * rhs)>
     {
-        return {lhs.x * std::forward<const UType>(rhs), lhs.y * std::forward<const UType>(rhs), lhs.z * std::forward<const UType>(rhs)};
+        return {lhs.x * std::forward<UType>(rhs), lhs.y * std::forward<UType>(rhs), lhs.z * std::forward<UType>(rhs)};
     }
 
     template <class UType>
@@ -147,10 +147,10 @@ public:
     }
 
     template <class UType>
-        requires (!std::same_as<std::decay_t<UType>, IVector3>) && dividable_with<TType, const UType>
-    friend auto operator/(IVector3 lhs, const UType&& rhs) -> IVector3<decltype(lhs.x / rhs)>
+        requires (!std::same_as<std::decay_t<UType>, IVector3>) && dividable_with<TType, UType>
+    friend auto operator/(IVector3 lhs, UType&& rhs) -> IVector3<decltype(lhs.x / rhs)>
     {
-        return {lhs.x / std::forward<const UType>(rhs), lhs.y / std::forward<const UType>(rhs), lhs.z / std::forward<const UType>(rhs)};
+        return {lhs.x / std::forward<UType>(rhs), lhs.y / std::forward<UType>(rhs), lhs.z / std::forward<UType>(rhs)};
     }
 
     [[nodiscard]] auto length() const -> float requires std::convertible_to<TType, float>
@@ -158,9 +158,18 @@ public:
         return std::sqrt(static_cast<float>(x * x + y * y + z * z));
     }
 
-    [[nodiscard]] auto normalize() const -> IVector3<float> requires dividable_with<TType, float>
+    [[nodiscard]] auto normalize() const -> IVector3<float> requires std::convertible_to<TType, float> &&
+        std::constructible_from<float, TType>
     {
-        return *this / length();
+        const float len = length();
+        if (len > std::numeric_limits<float>::epsilon())
+        {
+            if constexpr (std::is_same_v<TType, float>)
+                return *this / len;
+            else
+                return IVector3<float>{*this} / len;
+        }
+        return {};
     }
 
     [[nodiscard]] auto dot(const IVector3& rhs) const -> decltype(x * rhs.x + y * rhs.y + z * rhs.z)
