@@ -29,15 +29,15 @@ auto PerlinNoise2D::gradient_index(const uint32_t x, const uint32_t y) -> uint8_
 PerlinNoise2D::PerlinNoise2D()
 {
     std::random_device rd;
-    std::mt19937 generator{rd};
+    std::mt19937 generator{rd()};
 
     // generate [-1, 1] range, [-1, 1) without std::nextafter
     std::uniform_real_distribution<float> distribution{-1.0f, std::nextafter(1.0f, std::numeric_limits<float>::max())};
 
-    constexpr auto dice = [&distribution, &generator] -> float { return distribution(generator); };
+    const auto dice = [&distribution, &generator] -> float { return distribution(generator); };
     for (auto& v : m_gradient)
     {
-        v = IVector2{dice(), dice()};
+        v = IVector2{dice(), dice()}.normalize();
     }
 }
 
@@ -55,10 +55,18 @@ auto PerlinNoise2D::sample(const float x, const float y) -> float
     const float u = smoothstep(tx);
     const float v = smoothstep(ty);
 
-    const IVector2<float>& p00 = m_gradient[gradient_index(x0, y0)];
-    const IVector2<float>& p01 = m_gradient[gradient_index(x0, y1)];
-    const IVector2<float>& p10 = m_gradient[gradient_index(x1, y0)];
-    const IVector2<float>& p11 = m_gradient[gradient_index(x1, y1)];
+    const IVector2<float>& gradient00 = m_gradient[gradient_index(x0, y0)];
+    const IVector2<float>& gradient01 = m_gradient[gradient_index(x0, y1)];
+    const IVector2<float>& gradient10 = m_gradient[gradient_index(x1, y0)];
+    const IVector2<float>& gradient11 = m_gradient[gradient_index(x1, y1)];
 
-    const float a = interpolate(, u);
+    const IVector2<float> offset00 = IVector2<float>{tx, ty}.normalize();
+    const IVector2<float> offset01 = IVector2<float>{tx, ty - 1}.normalize();
+    const IVector2<float> offset10 = IVector2<float>{tx - 1, ty}.normalize();
+    const IVector2<float> offset11 = IVector2<float>{tx - 1, ty - 1}.normalize();
+
+    const float a = interpolate(gradient00.dot(offset00), gradient01.dot(offset01), u);
+    const float b = interpolate(gradient10.dot(offset10), gradient11.dot(offset11), u);
+
+    return interpolate(a, b, v);
 }
