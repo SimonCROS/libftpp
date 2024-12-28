@@ -60,13 +60,13 @@ auto PerlinNoise2D::sample(const float x, const float y) -> float
     const IVector2<float>& gradient10 = m_gradient[gradient_index(x1, y0)];
     const IVector2<float>& gradient11 = m_gradient[gradient_index(x1, y1)];
 
-    const IVector2<float> offset00 = IVector2<float>{tx, ty}.normalize();
-    const IVector2<float> offset01 = IVector2<float>{tx, ty - 1}.normalize();
-    const IVector2<float> offset10 = IVector2<float>{tx - 1, ty}.normalize();
-    const IVector2<float> offset11 = IVector2<float>{tx - 1, ty - 1}.normalize();
+    const IVector2<float> offset00 = IVector2<float>{x - static_cast<float>(x0), y - static_cast<float>(y0)};
+    const IVector2<float> offset01 = IVector2<float>{x - static_cast<float>(x0), y - static_cast<float>(y1)};
+    const IVector2<float> offset10 = IVector2<float>{x - static_cast<float>(x1), y - static_cast<float>(y0)};
+    const IVector2<float> offset11 = IVector2<float>{x - static_cast<float>(x1), y - static_cast<float>(y1)};
 
-    const float a = interpolate(gradient00.dot(offset00), gradient01.dot(offset01), u);
-    const float b = interpolate(gradient10.dot(offset10), gradient11.dot(offset11), u);
+    const float a = interpolate(gradient00.dot(offset00), gradient10.dot(offset10), u);
+    const float b = interpolate(gradient01.dot(offset01), gradient11.dot(offset11), u);
 
     return interpolate(a, b, v);
 }
