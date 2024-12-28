@@ -43,11 +43,11 @@ PerlinNoise2D::PerlinNoise2D()
 
 auto PerlinNoise2D::sample(const float x, const float y) -> float
 {
-    const uint32_t x0 = static_cast<int>(std::floor(x)) & m_table_size_mask;
-    const uint32_t y0 = static_cast<int>(std::floor(y)) & m_table_size_mask;
+    const uint32_t ix0 = static_cast<int>(std::floor(x)) & m_table_size_mask;
+    const uint32_t iy0 = static_cast<int>(std::floor(y)) & m_table_size_mask;
 
-    const uint32_t x1 = (x0 + 1) & m_table_size_mask;
-    const uint32_t y1 = (y0 + 1) & m_table_size_mask;
+    const uint32_t ix1 = (ix0 + 1) & m_table_size_mask;
+    const uint32_t iy1 = (iy0 + 1) & m_table_size_mask;
 
     const float tx = x - std::floor(x);
     const float ty = y - std::floor(y);
@@ -55,18 +55,33 @@ auto PerlinNoise2D::sample(const float x, const float y) -> float
     const float u = smoothstep(tx);
     const float v = smoothstep(ty);
 
-    const IVector2<float>& gradient00 = m_gradient[gradient_index(x0, y0)];
-    const IVector2<float>& gradient01 = m_gradient[gradient_index(x0, y1)];
-    const IVector2<float>& gradient10 = m_gradient[gradient_index(x1, y0)];
-    const IVector2<float>& gradient11 = m_gradient[gradient_index(x1, y1)];
+    const auto& gradient00 = m_gradient[gradient_index(ix0, iy0)];
+    const auto& gradient01 = m_gradient[gradient_index(ix0, iy1)];
+    const auto& gradient10 = m_gradient[gradient_index(ix1, iy0)];
+    const auto& gradient11 = m_gradient[gradient_index(ix1, iy1)];
 
-    const IVector2<float> offset00 = IVector2<float>{x - static_cast<float>(x0), y - static_cast<float>(y0)};
-    const IVector2<float> offset01 = IVector2<float>{x - static_cast<float>(x0), y - static_cast<float>(y1)};
-    const IVector2<float> offset10 = IVector2<float>{x - static_cast<float>(x1), y - static_cast<float>(y0)};
-    const IVector2<float> offset11 = IVector2<float>{x - static_cast<float>(x1), y - static_cast<float>(y1)};
+    const auto offset00 = IVector2{tx, ty};
+    const auto offset01 = IVector2{tx, ty - 1};
+    const auto offset10 = IVector2{tx - 1, ty};
+    const auto offset11 = IVector2{tx - 1, ty - 1};
 
     const float a = interpolate(gradient00.dot(offset00), gradient10.dot(offset10), u);
     const float b = interpolate(gradient01.dot(offset01), gradient11.dot(offset11), u);
 
     return interpolate(a, b, v);
+}
+
+auto PerlinNoise2D::sample(const float x, const float y, float amplitude, float frequency, const int octaveCount,
+                           const float persistence, const float lacunarity) -> float
+{
+    float value = 0;
+
+    for (int i = 0; i < octaveCount; i++)
+    {
+        value += amplitude * sample(x * frequency, y * frequency);
+        amplitude *= persistence;
+        frequency *= lacunarity;
+    }
+
+    return std::clamp(value, -1.0f, 1.0f);
 }
