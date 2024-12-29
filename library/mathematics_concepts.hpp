@@ -29,6 +29,12 @@ concept dividable_with = requires(T t, U u)
     t / u;
 };
 
+template <class T>
+concept negatable = requires(T t)
+{
+    { -t } -> std::same_as<T>;
+};
+
 template <class T, class U>
 concept assign_addable_with = requires(T t, U u)
 {

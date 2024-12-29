@@ -172,6 +172,12 @@ public:
     {
         return x * rhs.x + y * rhs.y;
     }
+
+    // cross product of a single 2D vector... requested by the subject
+    [[nodiscard]] auto cross() const -> IVector2 requires negatable<TType>
+    {
+        return {y, -x};
+    }
 };
 
 #endif //IVECTOR2_HPP
