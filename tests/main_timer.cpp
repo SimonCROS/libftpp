@@ -25,6 +25,8 @@ int main()
     assert(t.startOrResume() == false);
     std::this_thread::sleep_for(0.5s);
     assert(t.timedOut() == false);
+    assert(t.running() == true);
+    assert(t.paused() == false);
     assert(t.elapsedTime() >= 0.5s && t.elapsedTime() <= 0.6s);
     assert(t.remainingTime() <= 0.5s && t.elapsedTime() >= 0.4s);
 
@@ -52,14 +54,29 @@ int main()
     assert(t.startOrResume() == true);
     assert(t.startOrResume() == false);
     std::this_thread::sleep_for(300ms);
+    assert(t.timedOut() == false);
     assert(t.pause() == true);
     assert(t.pause() == false);
-    assert(t.elapsedTime() + t.remainingTime() == t.duration());
+    const auto elapsedBeforeSleep = t.elapsedTime();
+    const auto remainingBeforeSleep = t.remainingTime();
+    assert(elapsedBeforeSleep + remainingBeforeSleep == t.duration());
 
     std::cout << "Paused after 300ms : ok" << std::endl;
 
+    std::this_thread::sleep_for(300ms);
+    assert(t.timedOut() == false);
+    assert(t.pause() == false);
+    assert(t.paused() == true);
+    assert(t.running() == false);
+    assert(elapsedBeforeSleep == t.elapsedTime());
+    assert(remainingBeforeSleep == t.remainingTime());
+
+    std::cout << "Paused after 300ms + 300ms sleep : ok" << std::endl;
+
     assert(t.startOrResume() == true);
     assert(t.startOrResume() == false);
+    assert(t.running() == true);
+    assert(t.paused() == false);
     std::this_thread::sleep_for(200ms);
     t.pause();
     assert(t.timedOut() == true);

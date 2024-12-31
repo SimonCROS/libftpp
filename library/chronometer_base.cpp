@@ -21,7 +21,7 @@ auto ChronometerBase::startOrResume() -> bool
     if (!paused())
         m_startTimePoint = clock_type::now();
     else
-        m_pausedDuration = m_stopTimePoint - clock_type::now();
+        m_pausedDuration += clock_type::now() - m_stopTimePoint;
 
     m_running = true;
     m_paused = false;
