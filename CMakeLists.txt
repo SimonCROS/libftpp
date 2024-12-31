@@ -56,6 +56,8 @@ add_library(libftpp STATIC
         library/chronometer.hpp
         library/timer.cpp
         library/timer.hpp
+
+        library/observable_value.hpp
 )
 target_compile_options(libftpp PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
