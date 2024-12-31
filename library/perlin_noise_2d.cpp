@@ -86,3 +86,8 @@ auto PerlinNoise2D::sample(const float x, const float y, float amplitude, float 
 
     return std::clamp(value, -1.0f, 1.0f);
 }
+
+auto PerlinNoise2D::operator()(const float x, const float y) -> float
+{
+    return sample(x, y);
+}

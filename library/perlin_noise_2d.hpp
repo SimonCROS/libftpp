@@ -36,11 +36,13 @@ private:
 public:
     PerlinNoise2D();
 
-    auto sample(float x, float y) -> float;
+    [[nodiscard]] auto sample(float x, float y) -> float;
 
-    auto sample(float x, float y,
+    [[nodiscard]] auto sample(float x, float y,
                 float amplitude, float frequency,
                 int octaveCount, float persistence, float lacunarity) -> float;
+
+    [[nodiscard]] auto operator()(float x, float y) -> float;
 };
 
 #endif //PERLIN_NOISE_2_D_HPP
