@@ -14,21 +14,60 @@ int main()
 
     Timer t{1s};
 
+    assert(t.running() == false);
+    assert(t.paused() == false);
+
+    assert(t.pause() == false);
+
+    std::cout << "Setup : ok" << std::endl;
+
+    assert(t.startOrResume() == true);
+    assert(t.startOrResume() == false);
     std::this_thread::sleep_for(0.5s);
-    std::cout << (!t.timed_out() ? "Ok" : "Err") << std::endl;
+    assert(t.timedOut() == false);
+    assert(t.elapsedTime() >= 0.5s && t.elapsedTime() <= 0.6s);
+    assert(t.remainingTime() <= 0.5s && t.elapsedTime() >= 0.4s);
+
+    std::cout << "Running after 0.5s : ok" << std::endl;
 
     std::this_thread::sleep_for(0.5s);
-    std::cout << (t.timed_out() ? "Ok" : "Err") << std::endl;
+    assert(t.timedOut() == true);
+    assert(t.elapsedTime() >= 1.0s && t.elapsedTime() <= 1.1s);
+    assert(t.remainingTime() <= Timer::duration_type::zero());
+
+    std::cout << "Running after 1s : ok" << std::endl;
 
     t.reset();
-    std::cout << (!t.timed_out() ? "Ok" : "Err") << std::endl;
+    assert(t.running() == false);
+    assert(t.paused() == false);
+    assert(t.pause() == false);
 
-    std::this_thread::sleep_for(0.5s);
-    t.set_duration(400ms);
-    std::cout << (t.timed_out() ? "Ok" : "Err") << std::endl;
+    std::cout << "Reset : ok" << std::endl;
 
-    t.set_duration(1min);
-    std::cout << (!t.timed_out() ? "Ok" : "Err") << std::endl;
+    t.setDuration(500ms);
+    assert(t.duration() == 500ms);
+
+    std::cout << "Update duration : ok" << std::endl;
+
+    assert(t.startOrResume() == true);
+    assert(t.startOrResume() == false);
+    std::this_thread::sleep_for(300ms);
+    assert(t.pause() == true);
+    assert(t.pause() == false);
+    assert(t.elapsedTime() + t.remainingTime() == t.duration());
+
+    std::cout << "Paused after 300ms : ok" << std::endl;
+
+    assert(t.startOrResume() == true);
+    assert(t.startOrResume() == false);
+    std::this_thread::sleep_for(200ms);
+    t.pause();
+    assert(t.timedOut() == true);
+    assert(t.elapsedTime() >= 500ms && t.elapsedTime() <= 600ms);
+    assert(t.remainingTime() <= Timer::duration_type::zero());
+    assert(t.elapsedTime() + t.remainingTime() == t.duration());
+
+    std::cout << "Paused after 500ms : ok" << std::endl;
 
     return 0;
 }

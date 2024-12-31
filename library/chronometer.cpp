@@ -6,54 +6,8 @@
 
 auto Chronometer::reset() -> void
 {
-    m_running = false;
-    m_paused = false;
-    m_startTimePoint = {};
-    m_stopTimePoint = {};
-    m_pausedDuration = {};
+    ChronometerBase::reset();
     m_laps.clear();
-}
-
-auto Chronometer::running() const -> bool
-{
-    return m_running;
-}
-
-auto Chronometer::paused() const -> bool
-{
-    return m_paused;
-}
-
-auto Chronometer::laps() const -> const std::vector<Lap>&
-{
-    return m_laps;
-}
-
-auto Chronometer::startOrResume() -> bool
-{
-    if (running())
-        return false;
-
-    if (!paused())
-        m_startTimePoint = clock_type::now();
-    else
-        m_pausedDuration = m_stopTimePoint - clock_type::now();
-
-    m_running = true;
-    m_paused = false;
-    m_stopTimePoint = {};
-    return true;
-}
-
-auto Chronometer::pause() -> bool
-{
-    if (!running())
-        return false;
-
-    m_stopTimePoint = clock_type::now();
-    m_running = false;
-    m_paused = true;
-    return true;
 }
 
 auto Chronometer::lap() -> std::optional<Lap>
@@ -64,6 +18,11 @@ auto Chronometer::lap() -> std::optional<Lap>
         m_laps.push_back(*e_lap);
 
     return e_lap;
+}
+
+auto Chronometer::laps() const -> const std::vector<Lap>&
+{
+    return m_laps;
 }
 
 auto Chronometer::currentLap() const -> std::optional<Lap>

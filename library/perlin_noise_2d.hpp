@@ -5,7 +5,6 @@
 #ifndef PERLIN_NOISE_2_D_HPP
 #define PERLIN_NOISE_2_D_HPP
 #include <cstdint>
-#include <__algorithm/clamp.h>
 
 #include "ivector2.hpp"
 

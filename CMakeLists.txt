@@ -48,11 +48,14 @@ add_library(libftpp STATIC
         library/perlin_noise_2d.cpp
         library/perlin_noise_2d.hpp
 
-        library/timer.cpp
-        library/timer.hpp
-
+        library/chrono.hpp
+        library/chronometer_base.cpp
+        library/chronometer_base.hpp
+        library/basic_chronometer.hpp
         library/chronometer.cpp
         library/chronometer.hpp
+        library/timer.cpp
+        library/timer.hpp
 )
 target_compile_options(libftpp PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:

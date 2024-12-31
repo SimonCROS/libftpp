@@ -6,6 +6,7 @@
 
 #include <random>
 #include <cmath>
+#include <algorithm>
 
 auto PerlinNoise2D::smoothstep(const float t) -> float
 {
