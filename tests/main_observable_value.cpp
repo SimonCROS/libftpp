@@ -2,12 +2,10 @@
 // Created by scros on 12/31/24.
 //
 
-#include <observable_value.hpp>
+#include "observable_value.hpp"
 
 #include <cassert>
 #include <iostream>
-
-#include "thread_safe_iostream.hpp"
 
 struct MyType
 {

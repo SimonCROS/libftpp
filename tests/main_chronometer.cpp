@@ -2,9 +2,9 @@
 // Created by Simon Cros on 29/12/2024.
 //
 
-#include <thread>
-#include <chronometer.hpp>
+#include "chronometer.hpp"
 
+#include <thread>
 #include <cassert>
 #include <iostream>
 
