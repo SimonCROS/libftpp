@@ -35,9 +35,5 @@ auto Chronometer::currentLap() const -> std::optional<Lap>
     const duration_type lastLapTotalDuration = m_laps.empty() ? duration_type{} : m_laps.back().totalDuration;
     const duration_type endDuration = endTime - m_startTimePoint - m_pausedDuration;
 
-    return std::optional<Lap>{
-        std::in_place,
-        endDuration - lastLapTotalDuration,
-        endDuration,
-    };
+    return std::optional<Lap>(std::in_place, endDuration - lastLapTotalDuration, endDuration);
 }

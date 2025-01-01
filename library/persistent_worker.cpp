@@ -14,10 +14,10 @@ auto PersistentWorker::worker() -> void
         // Don't try to iterate on an empty set
         {
             // Scope for std::unique_lock
-            std::unique_lock lock{m_workerMutex};
+            std::unique_lock lock(m_workerMutex);
             m_conditionVariable.wait(lock, [this]
             {
-                std::scoped_lock s_lock{m_dataMutex};
+                std::scoped_lock s_lock(m_dataMutex);
                 return m_stop || !m_jobs.empty();
             });
 
@@ -28,7 +28,7 @@ auto PersistentWorker::worker() -> void
         // Copy jobs to cachedJobs, to avoid blocking insertion of a new job from the main thread
         {
             // Scope for std::scoped_lock
-            std::scoped_lock s_lock{m_dataMutex};
+            std::scoped_lock s_lock(m_dataMutex);
 
             auto jobs = std::views::values(m_jobs);
 #if __cpp_lib_containers_ranges >= 202202L
@@ -55,7 +55,7 @@ PersistentWorker::~PersistentWorker()
     m_stop = true;
 
     {
-        std::scoped_lock lock{m_workerMutex};
+        std::scoped_lock lock(m_workerMutex);
         m_conditionVariable.notify_all();
     }
 
@@ -65,7 +65,7 @@ PersistentWorker::~PersistentWorker()
 
 auto PersistentWorker::addTask(const std::string& name, const std::function<void()>& jobToExecute) -> void
 {
-    std::scoped_lock lock{m_dataMutex};
+    std::scoped_lock lock(m_dataMutex);
     // ignore, the prototype require a void return, and I don't want to throw for this
     std::ignore = m_jobs.try_emplace(name, jobToExecute);
     m_conditionVariable.notify_all();
@@ -73,7 +73,7 @@ auto PersistentWorker::addTask(const std::string& name, const std::function<void
 
 auto PersistentWorker::removeTask(const std::string& name) -> void
 {
-    std::scoped_lock lock{m_dataMutex};
+    std::scoped_lock lock(m_dataMutex);
     // ignore, the prototype require a void return, and I don't want to throw for this
     std::ignore = m_jobs.erase(name);
 }

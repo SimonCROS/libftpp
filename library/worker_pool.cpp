@@ -15,7 +15,7 @@ auto WorkerPool::worker(const int id) -> void
     {
         {
             // Scope for std::unique_lock
-            std::unique_lock lock{m_workerMutex};
+            std::unique_lock lock(m_workerMutex);
             m_conditionVariable.wait(lock, [this]
             {
                 return m_stop || !m_jobs.empty();
@@ -45,7 +45,7 @@ WorkerPool::~WorkerPool()
     m_stop = true;
 
     {
-        std::scoped_lock lock{m_workerMutex};
+        std::scoped_lock lock(m_workerMutex);
         m_conditionVariable.notify_all();
     }
 

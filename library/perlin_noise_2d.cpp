@@ -38,7 +38,7 @@ PerlinNoise2D::PerlinNoise2D()
     const auto dice = [&distribution, &generator] -> float { return distribution(generator); };
     for (auto& v : m_gradient)
     {
-        v = IVector2{dice(), dice()}.normalize();
+        v = IVector2(dice(), dice()).normalize();
     }
 }
 
@@ -61,10 +61,10 @@ auto PerlinNoise2D::sample(const float x, const float y) -> float
     const auto& gradient10 = m_gradient[gradient_index(ix1, iy0)];
     const auto& gradient11 = m_gradient[gradient_index(ix1, iy1)];
 
-    const auto offset00 = IVector2{tx, ty};
-    const auto offset01 = IVector2{tx, ty - 1};
-    const auto offset10 = IVector2{tx - 1, ty};
-    const auto offset11 = IVector2{tx - 1, ty - 1};
+    const IVector2 offset00(tx, ty);
+    const IVector2 offset01(tx, ty - 1);
+    const IVector2 offset10(tx - 1, ty);
+    const IVector2 offset11(tx - 1, ty - 1);
 
     const float a = interpolate(gradient00.dot(offset00), gradient10.dot(offset10), u);
     const float b = interpolate(gradient01.dot(offset01), gradient11.dot(offset11), u);

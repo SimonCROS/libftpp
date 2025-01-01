@@ -167,7 +167,7 @@ public:
             if constexpr (std::is_same_v<TType, float>)
                 return *this / len;
             else
-                return IVector3<float>{*this} / len;
+                return IVector3<float>(*this) / len;
         }
         return {};
     }

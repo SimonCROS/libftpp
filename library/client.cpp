@@ -112,7 +112,7 @@ auto Client::defineAction(const Message::Type& messageType,
 
 auto Client::send(const Message& message) -> void
 {
-    std::scoped_lock lock{m_clientAccessMutex};
+    std::scoped_lock lock(m_clientAccessMutex);
 
     if (m_clientPollfd.fd == -1)
         return;
@@ -122,7 +122,7 @@ auto Client::send(const Message& message) -> void
 
 auto Client::update() -> void
 {
-    std::scoped_lock lock{m_clientAccessMutex};
+    std::scoped_lock lock(m_clientAccessMutex);
 
     while (!m_in_messages.empty())
     {
@@ -164,7 +164,7 @@ auto Client::loop() -> void
     while (m_running && !fatalError)
     {
         {
-            std::scoped_lock lock{m_clientAccessMutex};
+            std::scoped_lock lock(m_clientAccessMutex);
             if (m_out_messages.empty())
                 m_clientPollfd.events &= ~POLLOUT;
             else
@@ -183,7 +183,7 @@ auto Client::loop() -> void
             {
                 if (auto&& o_message = Message::deserialize(*e_bytes))
                 {
-                    std::scoped_lock lock{m_clientAccessMutex};
+                    std::scoped_lock lock(m_clientAccessMutex);
                     m_in_messages.emplace(std::move(*o_message));
                 }
             }
@@ -200,7 +200,7 @@ auto Client::loop() -> void
 
         if (m_clientPollfd.revents & POLLOUT)
         {
-            std::scoped_lock lock{m_clientAccessMutex};
+            std::scoped_lock lock(m_clientAccessMutex);
             while (!m_out_messages.empty())
             {
                 auto& message = m_out_messages.front();
@@ -218,7 +218,7 @@ auto Client::loop() -> void
         std::this_thread::yield();
     }
 
-    std::scoped_lock lock{m_clientAccessMutex};
+    std::scoped_lock lock(m_clientAccessMutex);
     shutdown(m_clientPollfd.fd, SHUT_RDWR);
     close(m_clientPollfd.fd);
     m_clientPollfd = {};

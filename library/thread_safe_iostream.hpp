@@ -41,7 +41,7 @@ public:
     template <ThreadSafePrintable T>
     auto operator<<(const T& value) -> ThreadSafeIOStream&
     {
-        std::scoped_lock lock{ms_writeMutex};
+        std::scoped_lock lock(ms_writeMutex);
         m_buffer << value;
         return *this;
     }
@@ -49,7 +49,7 @@ public:
     template <ThreadSafeReadable T>
     auto operator>>(T& value) -> ThreadSafeIOStream&
     {
-        std::scoped_lock lock{ms_readMutex};
+        std::scoped_lock lock(ms_readMutex);
         std::cin >> value;
         return *this;
     }
@@ -57,7 +57,7 @@ public:
     template <class T>
     auto prompt(const std::string& question, T& dest) -> void
     {
-        std::scoped_lock lock{ms_readMutex};
+        std::scoped_lock lock(ms_readMutex);
         m_buffer << question;
         m_buffer.flush();
         std::cin >> dest;

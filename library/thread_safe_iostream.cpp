@@ -11,7 +11,7 @@ ThreadSafeIOStream::~ThreadSafeIOStream()
 
 auto ThreadSafeIOStream::setPrefix(const std::string& prefix) -> void
 {
-    std::scoped_lock lock{ms_writeMutex}; // << overload (write) uses m_prefix
+    std::scoped_lock lock(ms_writeMutex); // << overload (write) uses m_prefix
     m_buffer.setPrefix(prefix);
 }
 
@@ -23,6 +23,6 @@ auto ThreadSafeIOStream::operator<<(std::ostream&(*manip)(std::ostream&)) -> Thr
 
 auto ThreadSafeIOStream::flush() -> void
 {
-    std::scoped_lock lock{ms_readMutex};
+    std::scoped_lock lock(ms_readMutex);
     m_buffer.flush();
 }
