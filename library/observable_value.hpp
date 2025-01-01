@@ -29,7 +29,7 @@ public:
             std::is_nothrow_default_constructible_v<listeners_list_type>)
         requires
         std::default_initializable<T>
-        : m_value{}
+        : m_value()
     {
     }
 
@@ -37,20 +37,20 @@ public:
 
     constexpr ObservableValue(ObservableValue&& other) noexcept(std::is_nothrow_move_constructible_v<T> &&
         std::is_nothrow_move_constructible_v<listeners_list_type>) requires std::move_constructible<
-        T> : m_value{std::move(other.m_value)}, m_listeners{std::move(other.m_listeners)}
+        T> : m_value(std::move(other.m_value)), m_listeners(std::move(other.m_listeners))
     {
     }
 
     template <class... Args>
         requires std::constructible_from<T, Args...>
-    constexpr explicit ObservableValue(std::in_place_t, Args&&... args) : m_value{std::forward<Args>(args)...}
+    constexpr explicit ObservableValue(std::in_place_t, Args&&... args) : m_value(std::forward<Args>(args)...)
     {
     }
 
     template <class U, class... Args>
         requires std::constructible_from<T, std::initializer_list<U>, Args...>
     constexpr explicit ObservableValue(std::in_place_t, std::initializer_list<U> ilist, Args&&... args)
-        : m_value{ilist, std::forward<Args>(args)...}
+        : m_value(ilist, std::forward<Args>(args)...)
     {
     }
 
