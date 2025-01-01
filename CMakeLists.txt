@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(libftpp STATIC
+        libftpp.hpp
+
         library/data_structures.hpp
         library/pool.hpp
         library/data_buffer.cpp
@@ -59,6 +61,7 @@ add_library(libftpp STATIC
 
         library/observable_value.hpp
 )
+set_target_properties(libftpp PROPERTIES PREFIX "")
 target_compile_options(libftpp PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         -Wall -Wextra -Werror>
@@ -66,7 +69,8 @@ target_compile_options(libftpp PRIVATE
         /W4 /WX>
 )
 target_include_directories(libftpp PUBLIC
-        library
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/library
 )
 
 function(create_test_executables FOLDER_NAME TARGET_PREFIX)
