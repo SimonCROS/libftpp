@@ -8,6 +8,7 @@
 #include <concepts>
 #include <functional>
 #include <vector>
+#include <ranges>
 
 template <class T>
 class ObservableValue
@@ -59,9 +60,54 @@ public:
         std::constructible_from<T, U&&> &&
         (!std::same_as<std::remove_cvref<U>, std::in_place_t>) &&
         (!std::same_as<std::remove_cvref<U>, ObservableValue>)
-    explicit(std::convertible_to<T, U&&>)
+    explicit(!std::convertible_to<T, U&&>)
     constexpr ObservableValue(U&& value) : m_value(std::forward<U>(value))
     {
+    }
+
+    auto operator=(const ObservableValue& other) -> ObservableValue& = delete;
+    auto operator=(ObservableValue&& other) -> ObservableValue& = delete;
+
+    template <class U>
+    auto operator=(U&& newVal) noexcept(std::is_nothrow_assignable_v<T, U>) -> ObservableValue& requires
+        std::assignable_from<T&, U>
+    {
+        m_value = std::forward<U>(newVal);
+        for (const auto& m_listener : m_listeners)
+            m_listener(m_value);
+        return *this;
+    }
+
+    auto addListener(listener_type listener) -> void
+    {
+        m_listeners.emplace_back(std::move(listener));
+    }
+
+    template <class Range>
+        requires std::ranges::input_range<Range> && std::convertible_to<std::ranges::range_reference_t<Range>, listener_type>
+    auto addListeners(Range&& listeners) -> void
+    {
+        m_listeners.append_range(std::forward<Range>(listeners));
+    }
+
+    [[nodiscard]] auto operator->() -> T*
+    {
+        return m_value;
+    }
+
+    [[nodiscard]] auto operator->() const -> const T*
+    {
+        return m_value;
+    }
+
+    [[nodiscard]] auto operator*() -> T&
+    {
+        return *m_value;
+    }
+
+    [[nodiscard]] auto operator*() const -> const T&
+    {
+        return *m_value;
     }
 };
 

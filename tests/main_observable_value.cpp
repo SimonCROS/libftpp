@@ -42,5 +42,22 @@ int main()
         ObservableValue<MyType> ov6(MyType(4)); //                    (5)
     }
 
+    {
+        std::cout << "\nListeners\n" << std::endl;
+
+        auto simpleListener = [](const int& i) -> void { std::cout << "SL " << i << std::endl; };
+
+        ObservableValue<int> ov = 42;
+        ov.addListener([](const int& i) -> void { std::cout << "L1 " << i << std::endl; });
+        ov.addListener([](const int& i) -> void { std::cout << "L2 " << i << std::endl; });
+        ov = 44;
+        ov = 0;
+        ov.addListeners((decltype(simpleListener)[]){simpleListener, simpleListener, simpleListener});
+        ov = 42;
+
+        ObservableValue<int> moved = std::move(ov);
+        moved = 0;
+    }
+
     return 0;
 }
