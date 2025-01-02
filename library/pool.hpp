@@ -20,9 +20,9 @@ public:
     public:
         template <class... TArgs>
             requires std::constructible_from<TType, TArgs...>
-        Object(Pool* pool, TType* memory, TArgs... args): m_pool(pool)
+        Object(Pool* pool, TType* memory, TArgs... args): m_pool(pool), m_handle(memory)
         {
-            m_handle = new(memory) TType(std::forward<TArgs>(args)...);
+            std::construct_at(m_handle, std::forward<TArgs>(args)...);
         }
 
         Object(const Object& other) = delete;
@@ -50,7 +50,7 @@ public:
             {
                 assert(m_handle != nullptr && "m_handle should also be set to nullptr when Object is moved");
 
-                m_handle->~TType();
+                std::destroy_at(m_handle);
                 m_pool->release(m_handle);
             }
         }
