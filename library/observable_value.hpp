@@ -69,7 +69,7 @@ public:
     auto operator=(ObservableValue&& other) -> ObservableValue& = delete;
 
     template <class U>
-    auto operator=(U&& newVal) noexcept(std::is_nothrow_assignable_v<T, U>) -> ObservableValue& requires
+    auto operator=(U&& newVal) -> ObservableValue& requires
         std::assignable_from<T&, U>
     {
         m_value = std::forward<U>(newVal);
@@ -84,7 +84,8 @@ public:
     }
 
     template <class Range>
-        requires std::ranges::input_range<Range> && std::convertible_to<std::ranges::range_reference_t<Range>, listener_type>
+        requires std::ranges::input_range<Range> && std::convertible_to<
+            std::ranges::range_reference_t<Range>, listener_type>
     auto addListeners(Range&& listeners) -> void
     {
         m_listeners.append_range(std::forward<Range>(listeners));

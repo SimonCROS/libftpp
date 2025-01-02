@@ -12,7 +12,7 @@ class Timer : public BasicChronometer
 private:
     duration_type m_duration{};
 
-    template <typename Rep, typename Period>
+    template <class Rep, class Period>
     constexpr auto convert_duration(const std::chrono::duration<Rep, Period>& duration) const -> duration_type
     {
         return std::chrono::duration_cast<duration_type>(duration);
@@ -27,7 +27,7 @@ public:
      *
      * @param duration The duration of the timer, which will be cast to @ref duration_type using @ref std::chrono::duration_cast.
      */
-    template <typename Rep, typename Period>
+    template <class Rep, class Period>
     explicit Timer(const std::chrono::duration<Rep, Period>& duration) : m_duration(convert_duration(duration))
     {
     }
@@ -37,7 +37,7 @@ public:
      *
      * @param duration The duration of the timer, which will be cast to @ref duration_type using @ref std::chrono::duration_cast.
      */
-    template <typename Rep, typename Period>
+    template <class Rep, class Period>
     auto setDuration(const std::chrono::duration<Rep, Period>& duration) -> void
     {
         m_duration = convert_duration(duration);
