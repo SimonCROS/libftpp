@@ -20,10 +20,8 @@
 #include <string>
 #include <queue>
 #include <poll.h>
-#if __cpp_lib_expected >= 202211L
-#include <expected>
-#endif
 
+#include "expected.hpp"
 #include "message.hpp"
 
 class Client
@@ -56,12 +54,7 @@ public:
 private:
     auto loop() -> void;
 
-    [[nodiscard]] auto incomingRequest(int fd) const
-#if __cpp_lib_expected >= 202211L
-        -> std::expected<std::vector<uint8_t>, int>;
-#else
-    -> std::optional<std::vector<uint8_t>>;
-#endif
+    [[nodiscard]] auto incomingRequest(int fd) const -> Expected<std::vector<uint8_t>, int>;
 };
 
 #endif

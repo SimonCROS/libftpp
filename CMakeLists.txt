@@ -60,6 +60,8 @@ add_library(libftpp STATIC
         library/timer.hpp
 
         library/observable_value.hpp
+
+        library/expected.hpp
 )
 set_target_properties(libftpp PROPERTIES PREFIX "")
 target_compile_options(libftpp PRIVATE
@@ -89,3 +91,5 @@ endfunction()
 
 create_test_executables(42tests "42_")
 create_test_executables(tests "")
+
+add_compile_definitions(LIBFTPP_EXPECTED)

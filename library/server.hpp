@@ -4,8 +4,6 @@
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
-#include <memory>
-#include <queue>
 
 #if __has_include(<sys/socket.h>) \
     && __has_include(<netinet/in.h>) \
@@ -13,17 +11,15 @@
     && __has_include(<unistd.h>) \
     && __has_include(<poll.h>)
 
-#include <version>
 #include <functional>
 #include <thread>
 #include <optional>
 #include <mutex>
-#if __cpp_lib_expected >= 202211L
-#include <expected>
-#endif
-
+#include <memory>
+#include <queue>
 #include <poll.h>
 
+#include "expected.hpp"
 #include "message.hpp"
 
 class Server
@@ -82,12 +78,7 @@ private:
     auto removeClient(client_id_t id) -> bool;
 
     auto acceptIncomingConnection() -> std::vector<pollfd>;
-    [[nodiscard]] auto incomingRequest(int fd) const
-#if __cpp_lib_expected >= 202211L
-        -> std::expected<std::vector<uint8_t>, int>;
-#else
-        -> std::optional<std::vector<uint8_t>>;
-#endif
+    [[nodiscard]] auto incomingRequest(int fd) const -> Expected<std::vector<uint8_t>, int>;
 };
 
 #endif

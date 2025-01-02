@@ -383,20 +383,11 @@ auto Server::acceptIncomingConnection() -> std::vector<pollfd>
     return added;
 }
 
-auto Server::incomingRequest(const int fd) const
-#if __cpp_lib_expected >= 202211L
-    -> std::expected<std::vector<uint8_t>, int>
-#else
-    -> std::optional<std::vector<uint8_t>>
-#endif
+auto Server::incomingRequest(const int fd) const -> Expected<std::vector<uint8_t>, int>
 {
     // ReSharper disable once CppDFAConstantConditions CppDFAUnreachableCode
     if (!m_running)
-#if __cpp_lib_expected >= 202211L
-        return std::unexpected(-2);
-#else
-        return std::nullopt;
-#endif
+        return Unexpected(-2);
 
     constexpr size_t bufferSize = 50;
     static_assert(bufferSize > 1);
@@ -409,11 +400,7 @@ auto Server::incomingRequest(const int fd) const
     {
         recvResult = recv(fd, buffer, bufferSize, 0);
         if (recvResult == 0)
-#if __cpp_lib_expected >= 202211L
-            return std::unexpected(-1);
-#else
-            return std::nullopt;
-#endif
+            return Unexpected(-1);
         if (recvResult > 0)
             bytes.insert(bytes.end(), buffer, buffer + recvResult);
     }
