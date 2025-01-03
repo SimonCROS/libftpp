@@ -35,7 +35,73 @@ struct Unexpect
 inline constexpr Unexpect unexpect{};
 
 template <class E>
-class Unexpected;
+class Unexpected
+{
+private:
+    E m_error;
+
+public:
+    constexpr Unexpected()
+        requires
+        std::default_initializable<E>
+        : m_error()
+    {
+    }
+
+    constexpr Unexpected(const Unexpected& other) = default;
+
+    constexpr Unexpected(Unexpected&& other) = default;
+
+    template <class Err = E>
+    constexpr
+    explicit
+    Unexpected(Err&& e)
+        requires (!std::same_as<std::remove_cvref_t<Err>, std::in_place_t>)
+        && (!std::same_as<std::remove_cvref_t<Err>, Unexpected>)
+        && std::constructible_from<E, Err>
+        : m_error(std::forward<Err>(e))
+    {
+    }
+
+    template <class... Args>
+    constexpr explicit Unexpected(std::in_place_t, Args&&... args)
+        requires std::constructible_from<E, Args...>
+        : m_error(std::forward<Args>(args)...)
+    {
+    }
+
+    template <class U, class... Args>
+    constexpr
+    explicit
+    Unexpected(std::in_place_t, std::initializer_list<U> il, Args&&... args)
+        requires std::constructible_from<E, std::initializer_list<U>&, Args...>
+        : m_error(il, std::forward<Args>(args)...)
+    {
+    }
+
+    [[nodiscard]] constexpr auto error() & -> E&
+    {
+        return m_error;
+    }
+
+    [[nodiscard]] constexpr auto error() const & -> const E&
+    {
+        return m_error;
+    }
+
+    [[nodiscard]] constexpr auto error() && -> E&&
+    {
+        return std::move(m_error);
+    }
+
+    [[nodiscard]] constexpr auto error() const && -> const E&&
+    {
+        return std::move(m_error);
+    }
+};
+
+template <class E>
+Unexpected(E) -> Unexpected<E>;
 
 template <class T, class E>
 class Expected
