@@ -83,6 +83,7 @@ public:
         m_listeners.emplace_back(std::move(listener));
     }
 
+#if __cpp_lib_containers_ranges >= 202202L
     template <class Range>
         requires std::ranges::input_range<Range> && std::convertible_to<
             std::ranges::range_reference_t<Range>, listener_type>
@@ -90,25 +91,26 @@ public:
     {
         m_listeners.append_range(std::forward<Range>(listeners));
     }
+#endif
 
     [[nodiscard]] auto operator->() -> T*
     {
-        return m_value;
+        return &m_value;
     }
 
     [[nodiscard]] auto operator->() const -> const T*
     {
-        return m_value;
+        return &m_value;
     }
 
     [[nodiscard]] auto operator*() -> T&
     {
-        return *m_value;
+        return m_value;
     }
 
     [[nodiscard]] auto operator*() const -> const T&
     {
-        return *m_value;
+        return m_value;
     }
 };
 

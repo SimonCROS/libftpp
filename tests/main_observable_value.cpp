@@ -50,11 +50,16 @@ int main()
         ov.addListener([](const int& i) -> void { std::cout << "L2 " << i << std::endl; });
         ov = 44;
         ov = 0;
+#if __cpp_lib_containers_ranges >= 202202L
         ov.addListeners((decltype(simpleListener)[]){simpleListener, simpleListener, simpleListener});
         ov = 42;
+#endif
 
         ObservableValue<int> moved = std::move(ov);
         moved = 0;
+
+        assert(*moved == 0);
+        assert(*(moved.operator->()) == 0);
     }
 
     return 0;
