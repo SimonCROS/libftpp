@@ -52,10 +52,10 @@ private:
     using variant_type = std::variant<T, E>;
 
     template <class U>
-    constexpr bool is_unexpected = false;
+    static constexpr bool is_unexpected = false;
 
     template <class U>
-    constexpr bool is_unexpected<Unexpected<U>> = true;
+    static constexpr bool is_unexpected<Unexpected<U>> = true;
 
     variant_type m_variant;
 
@@ -177,6 +177,86 @@ public:
         requires std::constructible_from<E, std::initializer_list<U>&, Args...>
         : m_variant(std::in_place_index<1>, il, std::forward<Args>(args)...)
     {
+    }
+
+    [[nodiscard]] constexpr auto has_value() const noexcept -> bool
+    {
+        return m_variant.index() == 0;
+    }
+
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
+    {
+        return has_value();
+    }
+
+    [[nodiscard]] constexpr auto value() & -> T&
+    {
+        return std::get<0>(m_variant);
+    }
+
+    [[nodiscard]] constexpr auto value() const & -> const T&
+    {
+        return std::get<0>(m_variant);
+    }
+
+    [[nodiscard]] constexpr auto value() && -> T&&
+    {
+        return std::get<0>(std::move(m_variant));
+    }
+
+    [[nodiscard]] constexpr auto value() const && -> const T&&
+    {
+        return std::get<0>(std::move(m_variant));
+    }
+
+    [[nodiscard]] constexpr auto error() & -> E&
+    {
+        return std::get<1>(m_variant);
+    }
+
+    [[nodiscard]] constexpr auto error() const & -> const E&
+    {
+        return std::get<1>(m_variant);
+    }
+
+    [[nodiscard]] constexpr auto error() && -> E&&
+    {
+        return std::get<1>(std::move(m_variant));
+    }
+
+    [[nodiscard]] constexpr auto error() const && -> const E&&
+    {
+        return std::get<1>(std::move(m_variant));
+    }
+
+    [[nodiscard]] constexpr auto operator->() const noexcept -> const T*
+    {
+        return &std::get<0>(m_variant);
+    }
+
+    [[nodiscard]] constexpr auto operator->() noexcept -> T*
+    {
+        return &std::get<0>(m_variant);
+    }
+
+    [[nodiscard]] constexpr auto operator*() const & noexcept -> const T&
+    {
+        return std::get<0>(m_variant);
+    }
+
+    [[nodiscard]] constexpr auto operator*() & noexcept -> T&
+    {
+        return std::get<0>(m_variant);
+    }
+
+    [[nodiscard]] constexpr auto operator*() const && noexcept -> const T&&
+    {
+        return std::get<0>(std::move(m_variant));
+    }
+
+    [[nodiscard]] constexpr auto operator*() && noexcept -> T&&
+    {
+        return std::get<0>(std::move(m_variant));
     }
 };
 
