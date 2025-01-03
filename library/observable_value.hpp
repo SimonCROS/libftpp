@@ -93,12 +93,12 @@ public:
     }
 #endif
 
-    [[nodiscard]] auto operator->() -> T*
+    [[nodiscard]] auto operator->() & -> T*
     {
         return &m_value;
     }
 
-    [[nodiscard]] auto operator->() const -> const T*
+    [[nodiscard]] auto operator->() const & -> const T*
     {
         return &m_value;
     }
