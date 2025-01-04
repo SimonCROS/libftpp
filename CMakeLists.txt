@@ -62,6 +62,8 @@ add_library(libftpp STATIC
         library/observable_value.hpp
 
         library/expected.hpp
+        library/logger.cpp
+        library/logger.hpp
 )
 set_target_properties(libftpp PROPERTIES PREFIX "")
 target_compile_options(libftpp PRIVATE
@@ -93,3 +95,4 @@ create_test_executables(42tests "42_")
 create_test_executables(tests "")
 
 add_compile_definitions(LIBFTPP_EXPECTED)
+add_compile_definitions(LIBFTPP_ENABLE_P2508R1)

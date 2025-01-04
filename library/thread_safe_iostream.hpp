@@ -32,6 +32,12 @@ class ThreadSafeIOStream
     PrefixedOStream m_buffer{std::cout};
 
 public:
+    ThreadSafeIOStream() = default;
+
+    explicit ThreadSafeIOStream(const std::ostream& stream): m_buffer(stream)
+    {
+    }
+
     ~ThreadSafeIOStream();
 
     auto setPrefix(const std::string& prefix) -> void;
