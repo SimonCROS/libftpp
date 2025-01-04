@@ -19,7 +19,7 @@ struct MyType
 int main()
 {
     {
-        std::cout << "\nOptional\n" << std::endl;
+        std::cout << "\n========== Optional ==========\n" << std::endl;
 
         std::optional<MyType> op1(std::in_place);
         std::optional<MyType> op2(std::move(op1));
@@ -30,7 +30,7 @@ int main()
     }
 
     {
-        std::cout << "\nObservableValue\n" << std::endl;
+        std::cout << "\n========== ObservableValue ==========\n" << std::endl;
 
         ObservableValue<MyType> ov1; //                                 (1)
         ObservableValue<MyType> ov2(std::move(ov1)); //                 (2)
@@ -41,7 +41,7 @@ int main()
     }
 
     {
-        std::cout << "\nListeners\n" << std::endl;
+        std::cout << "\n========== Listeners ==========\n" << std::endl;
 
         auto simpleListener = [](const int& i) -> void { std::cout << "SL " << i << std::endl; };
 

@@ -10,6 +10,11 @@
 
 struct MyType
 {
+    size_t dummy1;
+    size_t dummy2;
+    size_t dummy3;
+    size_t dummy4;
+
     constexpr MyType() { std::cout << "Default constructor" << std::endl; }
     constexpr MyType(int x) { std::cout << "Single int constructor" << std::endl; }
     constexpr MyType(std::initializer_list<int> il) { std::cout << "Initializer list constructor" << std::endl; }
@@ -20,7 +25,7 @@ struct MyType
 int main()
 {
     {
-        std::cout << "Overload test" << std::endl;
+        std::cout << "\n========== Overloads test ==========\n" << std::endl;
 
         Expected<int, std::string> tmp1(5);
         Unexpected<std::string> tmp2("42");
@@ -37,6 +42,32 @@ int main()
         Expected<MyType, std::string> ex10(std::in_place, {4, 2}); // (10)
         Expected<MyType, std::string> ex11(unexpect, "42"); //          (11)
         Expected<MyType, std::string> ex12(unexpect, {'4', '2'}); //  (12)
+    }
+
+    {
+        std::cout << "\n========== Size test ==========\n" << std::endl;
+
+        std::cout << "Expected<MyType, std::string> size: " << sizeof(Expected<MyType, std::string>) << '\n'
+            << "       MyType size: " << sizeof(MyType) << '\n'
+            << "  std::string size: " << sizeof(std::string) << std::endl;
+    }
+
+    {
+        std::cout << "\n========== Usage tests ==========\n" << std::endl;
+
+        std::string str;
+        getline(std::cin, str);
+
+        Expected<std::string, std::string> expected;
+        if (str.empty())
+            expected = Expected<std::string, std::string>(str);
+        else
+            expected = Unexpected("Nothing turned in :'(");
+
+        if (expected.has_value())
+            std::cout << "You entered " << expected->length() << "characters: " << *expected << std::endl;
+        else
+            std::cout << "Error: " << expected.error() << std::endl;
     }
 
     return 0;
