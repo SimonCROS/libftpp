@@ -23,6 +23,9 @@ using Unexpected = std::unexpected<E>;
 
 #else
 
+#include <variant>
+#include <concepts>
+
 #ifndef LIBFTPP_EXPECTED
 #define LIBFTPP_EXPECTED
 #endif
@@ -115,7 +118,13 @@ public:
     using rebind = Expected<U, error_type>;
 
 private:
-    using variant_type = std::variant<T, E>;
+    template <class U, class G>
+    friend class Expected;
+
+    using variant_type = std::variant<std::monostate, T, E>;
+
+    static constexpr std::size_t t_index = 1;
+    static constexpr std::size_t e_index = 2;
 
     template <class U>
     static constexpr bool is_unexpected = false;
@@ -129,7 +138,7 @@ public:
     constexpr Expected()
         requires
         std::default_initializable<variant_type>
-        : m_variant()
+        : m_variant(std::in_place_index<t_index>)
     {
     }
 
@@ -150,36 +159,46 @@ public:
 
     template <class U, class G>
     constexpr
-    explicit(!std::is_convertible_v<const typename Expected<U, G>::variant_type&, variant_type>)
+    explicit(!std::is_convertible_v<const U&, T> || !std::is_convertible_v<const G&, E>)
     Expected(const Expected<U, G>& other)
-        requires std::constructible_from<variant_type, const typename Expected<U, G>::variant_type&>
-        && std::constructible_from<T, Expected<U, G>&>
-        && std::constructible_from<T, Expected<U, G>>
-        && std::constructible_from<T, const Expected<U, G>&>
-        && std::constructible_from<T, const Expected<U, G>>
-        && std::convertible_to<Expected<U, G>&, T>
-        && std::convertible_to<Expected<U, G>, T>
-        && std::convertible_to<const Expected<U, G>&, T>
-        && std::convertible_to<const Expected<U, G>, T>
-        : m_variant(other.m_variant)
+        requires std::constructible_from<T, const U&> && std::constructible_from<E, const G&>
+        && (!std::constructible_from<T, Expected<U, G>&>)
+        && (!std::constructible_from<T, Expected<U, G>>)
+        && (!std::constructible_from<T, const Expected<U, G>&>)
+        && (!std::constructible_from<T, const Expected<U, G>>)
+        && (!std::convertible_to<Expected<U, G>&, T>)
+        && (!std::convertible_to<Expected<U, G>, T>)
+        && (!std::convertible_to<const Expected<U, G>&, T>)
+        && (!std::convertible_to<const Expected<U, G>, T>)
+        : m_variant()
     {
+        if (other.has_value())
+            m_variant.template emplace<t_index>(std::forward<const U&>(other.value()));
+        else
+            m_variant.template emplace<e_index>(std::forward<const G&>(other.error()));
     }
 
     template <class U, class G>
     constexpr
-    explicit(!std::is_convertible_v<typename Expected<U, G>::variant_type, variant_type>)
+    explicit(!std::is_convertible_v<U, T> || !std::is_convertible_v<G, E>)
     Expected(Expected<U, G>&& other)
-        requires std::constructible_from<variant_type, typename Expected<U, G>::variant_type>
-        && std::constructible_from<T, Expected<U, G>&>
-        && std::constructible_from<T, Expected<U, G>>
-        && std::constructible_from<T, const Expected<U, G>&>
-        && std::constructible_from<T, const Expected<U, G>>
-        && std::convertible_to<Expected<U, G>&, T>
-        && std::convertible_to<Expected<U, G>, T>
-        && std::convertible_to<const Expected<U, G>&, T>
-        && std::convertible_to<const Expected<U, G>, T>
-        : m_variant(std::move(other.m_variant))
+        requires std::constructible_from<T, U> && std::constructible_from<E, G>
+        && (!std::constructible_from<T, Expected<U, G>&>)
+        && (!std::constructible_from<T, Expected<U, G>>)
+        && (!std::constructible_from<T, const Expected<U, G>&>)
+        && (!std::constructible_from<T, const Expected<U, G>>)
+        && (!std::convertible_to<Expected<U, G>&, T>)
+        && (!std::convertible_to<Expected<U, G>, T>)
+        && (!std::convertible_to<const Expected<U, G>&, T>)
+        && (!std::convertible_to<const Expected<U, G>, T>)
+        : m_variant()
     {
+        if (other.has_value())
+        {
+            m_variant.template emplace<t_index>(std::forward<U>(other.value()));
+        }
+        else
+            m_variant.template emplace<e_index>(std::forward<G>(other.error()));
     }
 
     template <class U = T>
@@ -190,7 +209,7 @@ public:
         && (!std::same_as<Expected<T, E>, std::remove_cvref_t<U>>)
         && (!is_unexpected<std::remove_cvref_t<U>>)
         && std::constructible_from<T, U>
-        : m_variant(std::in_place_index<0>, std::forward<U>(v))
+        : m_variant(std::in_place_index<t_index>, std::forward<U>(v))
     {
     }
 
@@ -199,7 +218,7 @@ public:
     explicit(!std::is_convertible_v<const G&, E>)
     Expected(const Unexpected<G>& e)
         requires std::constructible_from<E, const G&>
-        : m_variant(std::in_place_index<1>, std::forward<const G&>(e.error()))
+        : m_variant(std::in_place_index<e_index>, std::forward<const G&>(e.error()))
     {
     }
 
@@ -207,14 +226,14 @@ public:
     constexpr explicit(!std::is_convertible_v<G, E>)
     Expected(Unexpected<G>&& e)
         requires std::constructible_from<E, G>
-        : m_variant(std::in_place_index<1>, std::forward<G>(e.error()))
+        : m_variant(std::in_place_index<e_index>, std::forward<G>(e.error()))
     {
     }
 
     template <class... Args>
     constexpr explicit Expected(std::in_place_t, Args&&... args)
         requires std::constructible_from<T, Args...>
-        : m_variant(std::in_place_index<0>, std::forward<Args>(args)...)
+        : m_variant(std::in_place_index<t_index>, std::forward<Args>(args)...)
     {
     }
 
@@ -223,7 +242,7 @@ public:
     explicit
     Expected(std::in_place_t, std::initializer_list<U> il, Args&&... args)
         requires std::constructible_from<T, std::initializer_list<U>&, Args...>
-        : m_variant(std::in_place_index<0>, il, std::forward<Args>(args)...)
+        : m_variant(std::in_place_index<t_index>, il, std::forward<Args>(args)...)
     {
     }
 
@@ -232,7 +251,7 @@ public:
     explicit
     Expected(Unexpect, Args&&... args)
         requires std::constructible_from<E, Args...>
-        : m_variant(std::in_place_index<1>, std::forward<Args>(args)...)
+        : m_variant(std::in_place_index<e_index>, std::forward<Args>(args)...)
     {
     }
 
@@ -241,13 +260,13 @@ public:
     explicit
     Expected(Unexpect, std::initializer_list<U> il, Args&&... args)
         requires std::constructible_from<E, std::initializer_list<U>&, Args...>
-        : m_variant(std::in_place_index<1>, il, std::forward<Args>(args)...)
+        : m_variant(std::in_place_index<e_index>, il, std::forward<Args>(args)...)
     {
     }
 
     [[nodiscard]] constexpr auto has_value() const noexcept -> bool
     {
-        return m_variant.index() == 0;
+        return m_variant.index() == t_index;
     }
 
     [[nodiscard]] constexpr explicit operator bool() const noexcept
@@ -257,72 +276,72 @@ public:
 
     [[nodiscard]] constexpr auto value() & -> T&
     {
-        return std::get<0>(m_variant);
+        return std::get<t_index>(m_variant);
     }
 
     [[nodiscard]] constexpr auto value() const & -> const T&
     {
-        return std::get<0>(m_variant);
+        return std::get<t_index>(m_variant);
     }
 
     [[nodiscard]] constexpr auto value() && -> T&&
     {
-        return std::get<0>(std::move(m_variant));
+        return std::get<t_index>(std::move(m_variant));
     }
 
     [[nodiscard]] constexpr auto value() const && -> const T&&
     {
-        return std::get<0>(std::move(m_variant));
+        return std::get<t_index>(std::move(m_variant));
     }
 
     [[nodiscard]] constexpr auto error() & -> E&
     {
-        return std::get<1>(m_variant);
+        return std::get<e_index>(m_variant);
     }
 
     [[nodiscard]] constexpr auto error() const & -> const E&
     {
-        return std::get<1>(m_variant);
+        return std::get<e_index>(m_variant);
     }
 
     [[nodiscard]] constexpr auto error() && -> E&&
     {
-        return std::get<1>(std::move(m_variant));
+        return std::get<e_index>(std::move(m_variant));
     }
 
     [[nodiscard]] constexpr auto error() const && -> const E&&
     {
-        return std::get<1>(std::move(m_variant));
+        return std::get<e_index>(std::move(m_variant));
     }
 
     [[nodiscard]] constexpr auto operator->() const noexcept -> const T*
     {
-        return &std::get<0>(m_variant);
+        return &std::get<t_index>(m_variant);
     }
 
     [[nodiscard]] constexpr auto operator->() noexcept -> T*
     {
-        return &std::get<0>(m_variant);
+        return &std::get<t_index>(m_variant);
     }
 
     [[nodiscard]] constexpr auto operator*() const & noexcept -> const T&
     {
-        return std::get<0>(m_variant);
+        return std::get<t_index>(m_variant);
     }
 
     [[nodiscard]] constexpr auto operator*() & noexcept -> T&
     {
-        return std::get<0>(m_variant);
+        return std::get<t_index>(m_variant);
     }
 
     [[nodiscard]] constexpr auto operator*() const && noexcept -> const T&&
     {
-        return std::get<0>(std::move(m_variant));
+        return std::get<t_index>(std::move(m_variant));
     }
 
     [[nodiscard]] constexpr auto operator*() && noexcept -> T&&
     {
-        return std::get<0>(std::move(m_variant));
+        return std::get<t_index>(std::move(m_variant));
     }
 };
 
