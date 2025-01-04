@@ -94,5 +94,5 @@ endfunction()
 create_test_executables(42tests "42_")
 create_test_executables(tests "")
 
-add_compile_definitions(LIBFTPP_EXPECTED)
+add_compile_definitions(LIBFTPP_DISABLE_P0323R12)
 add_compile_definitions(LIBFTPP_ENABLE_P2508R1)

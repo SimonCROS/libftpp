@@ -13,6 +13,8 @@ auto Thread::start() -> void
     m_thread = std::thread([](const std::string& name, const std::function<void()>& func)
     {
         threadSafeCout.setPrefix("[" + name + "] ");
+        tscout().setPrefix("[" + name + "] ");
+        tscerr().setPrefix("[" + name + "] ");
         std::invoke(func);
     }, m_name, m_func);
 }

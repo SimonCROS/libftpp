@@ -72,6 +72,11 @@ public:
     auto flush() -> void;
 };
 
+// Deprecated but I can't use the deprecated attribute because of -Werror
 thread_local inline ThreadSafeIOStream threadSafeCout = {};
+
+auto tscout() -> ThreadSafeIOStream&;
+
+auto tscerr() -> ThreadSafeIOStream&;
 
 #endif //THREAD_SAFE_IO_STREAM_HPP

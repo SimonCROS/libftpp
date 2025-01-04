@@ -24,6 +24,10 @@ struct MyType
 
 int main()
 {
+#ifndef LIBFTPP_EXPECTED
+    std::cout << "\033[33mUSING REAL std::expected\033[0m" << std::endl;
+#endif
+
     {
         std::cout << "\n========== Overloads test ==========\n" << std::endl;
 

@@ -7,7 +7,7 @@
 
 #include <version>
 
-#if __cpp_lib_expected >= 202211L && !defined(LIBFTPP_EXPECTED)
+#if __cpp_lib_expected >= 202211L && !defined(LIBFTPP_DISABLE_P0323R12)
 
 #include <expected>
 

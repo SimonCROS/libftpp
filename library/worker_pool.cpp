@@ -10,6 +10,8 @@
 auto WorkerPool::worker(const int id) -> void
 {
     threadSafeCout.setPrefix(std::format("[Worker {}] ", id));
+    tscout().setPrefix(std::format("[Worker {}] ", id));
+    tscerr().setPrefix(std::format("[Worker {}] ", id));
 
     while (!m_stop)
     {

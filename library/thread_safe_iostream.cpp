@@ -26,3 +26,15 @@ auto ThreadSafeIOStream::flush() -> void
     std::scoped_lock lock(ms_readMutex);
     m_buffer.flush();
 }
+
+auto tscout() -> ThreadSafeIOStream&
+{
+    thread_local ThreadSafeIOStream stream(std::cout);
+    return stream;
+}
+
+auto tscerr() -> ThreadSafeIOStream&
+{
+    thread_local ThreadSafeIOStream stream(std::cerr);
+    return stream;
+}
