@@ -55,19 +55,24 @@ int main()
     {
         std::cout << "\n========== Usage tests ==========\n" << std::endl;
 
-        std::string str;
-        getline(std::cin, str);
-
         Expected<std::string, std::string> expected;
-        if (str.empty())
-            expected = Expected<std::string, std::string>(str);
-        else
-            expected = Unexpected("Nothing turned in :'(");
+        std::string str;
 
-        if (expected.has_value())
-            std::cout << "You entered " << expected->length() << "characters: " << *expected << std::endl;
-        else
-            std::cout << "Error: " << expected.error() << std::endl;
+        for (int i = 0; i < 4; ++i)
+        {
+            std::cout << "Type something: ";
+            getline(std::cin, str);
+
+            if (str.empty())
+                expected = Unexpected("Nothing turned in :'(");
+            else
+                expected = str;
+
+            if (expected.has_value())
+                std::cout << "You entered " << expected->length() << " characters: `" << *expected << '`' << std::endl;
+            else
+                std::cout << "Error: " << expected.error() << std::endl;
+        }
     }
 
     return 0;

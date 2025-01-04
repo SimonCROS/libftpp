@@ -264,6 +264,51 @@ public:
     {
     }
 
+    constexpr Expected& operator=(const Expected& other) = default;
+
+    constexpr Expected& operator=(Expected&& other) = default;
+
+    template <class U = T>
+    constexpr
+    Expected&
+    operator=(U&& v)
+        requires (!std::same_as<Expected, std::remove_cvref_t<U>>)
+        && (!is_unexpected<std::remove_cvref_t<U>>)
+        && std::constructible_from<T, U> && std::assignable_from<T&, U>
+        && (std::is_nothrow_constructible_v<T, U>
+            || std::is_nothrow_move_constructible_v<T>
+            || std::is_nothrow_move_constructible_v<E>)
+    {
+        m_variant.template emplace<t_index>(std::forward<U>(v));
+        return *this;
+    }
+
+    template <class G>
+    constexpr
+    Expected&
+    operator=(const Unexpected<G>& e)
+        requires std::constructible_from<E, const G&>
+        && std::assignable_from<E&, const G&>
+        && (std::is_nothrow_constructible_v<E, const G&> || std::is_nothrow_move_constructible_v<T> ||
+            std::is_nothrow_move_constructible_v<E>)
+    {
+        m_variant.template emplace<e_index>(std::forward<const G&>(e.error()));
+        return *this;
+    }
+
+    template <class G>
+    constexpr
+    Expected&
+    operator=(Unexpected<G>&& e)
+        requires std::constructible_from<E, G>
+        && std::assignable_from<E&, G>
+        && (std::is_nothrow_constructible_v<E, G> || std::is_nothrow_move_constructible_v<T> ||
+            std::is_nothrow_move_constructible_v<E>)
+    {
+        m_variant.template emplace<e_index>(std::forward<G>(e.error()));
+        return *this;
+    }
+
     [[nodiscard]] constexpr auto has_value() const noexcept -> bool
     {
         return m_variant.index() == t_index;
