@@ -1,5 +1,5 @@
 //
-// Created by scros on 11/15/24.
+// Created by Simon Cros on 11/15/24.
 //
 
 #ifndef DATA_STRUCTURES_HPP

@@ -1,5 +1,5 @@
 //
-// Created by scros on 11/26/24.
+// Created by Simon Cros on 11/26/24.
 //
 
 #ifndef DESIGN_PATTERNS_HPP

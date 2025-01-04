@@ -1,5 +1,5 @@
 //
-// Created by scros on 12/5/24.
+// Created by Simon Cros on 12/5/24.
 //
 
 #ifndef PERSISTENT_WORKER_HPP

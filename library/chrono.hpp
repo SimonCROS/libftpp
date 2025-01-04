@@ -1,5 +1,5 @@
 //
-// Created by scros on 12/31/24.
+// Created by Simon Cros on 12/31/24.
 //
 
 #ifndef CHRONO_HPP

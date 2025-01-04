@@ -1,5 +1,5 @@
 //
-// Created by scros on 12/5/24.
+// Created by Simon Cros on 12/5/24.
 //
 
 #ifndef WORKER_POOL_HPP

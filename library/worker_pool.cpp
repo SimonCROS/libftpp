@@ -1,5 +1,5 @@
 //
-// Created by scros on 12/5/24.
+// Created by Simon Cros on 12/5/24.
 //
 
 #include "worker_pool.hpp"

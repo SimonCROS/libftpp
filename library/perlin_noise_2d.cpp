@@ -1,5 +1,5 @@
 //
-// Created by simon on 15/12/2024.
+// Created by Simon Cros 15/12/2024.
 //
 
 #include "perlin_noise_2d.hpp"

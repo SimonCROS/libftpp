@@ -1,5 +1,5 @@
 //
-// Created by scros on 11/27/24.
+// Created by Simon Cros on 11/27/24.
 //
 
 #ifndef SINGLETON_HPP

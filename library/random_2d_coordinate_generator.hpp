@@ -1,5 +1,5 @@
 //
-// Created by simon on 15/12/2024.
+// Created by Simon Cros 15/12/2024.
 //
 
 #ifndef RANDOM_2_D_COORDINATE_GENERATOR_HPP

@@ -1,5 +1,5 @@
 //
-// Created by scros on 12/9/24.
+// Created by Simon Cros on 12/9/24.
 //
 
 #ifndef NETWORK_HPP

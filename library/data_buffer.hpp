@@ -1,5 +1,5 @@
 //
-// Created by scros on 11/10/24.
+// Created by Simon Cros on 11/10/24.
 //
 
 #ifndef DATA_BUFFER_HPP
