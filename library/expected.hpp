@@ -264,15 +264,12 @@ public:
     {
     }
 
-    constexpr Expected& operator=(const Expected& other) = default;
+    constexpr auto operator=(const Expected& other) -> Expected& = default;
 
-    constexpr Expected& operator=(Expected&& other) = default;
+    constexpr auto operator=(Expected&& other) -> Expected& = default;
 
     template <class U = T>
-    constexpr
-    Expected&
-    operator=(U&& v)
-        requires (!std::same_as<Expected, std::remove_cvref_t<U>>)
+    constexpr auto operator=(U&& v) -> Expected& requires (!std::same_as<Expected, std::remove_cvref_t<U>>)
         && (!is_unexpected<std::remove_cvref_t<U>>)
         && std::constructible_from<T, U> && std::assignable_from<T&, U>
         && (std::is_nothrow_constructible_v<T, U>
@@ -284,10 +281,7 @@ public:
     }
 
     template <class G>
-    constexpr
-    Expected&
-    operator=(const Unexpected<G>& e)
-        requires std::constructible_from<E, const G&>
+    constexpr auto operator=(const Unexpected<G>& e) -> Expected& requires std::constructible_from<E, const G&>
         && std::assignable_from<E&, const G&>
         && (std::is_nothrow_constructible_v<E, const G&> || std::is_nothrow_move_constructible_v<T> ||
             std::is_nothrow_move_constructible_v<E>)
@@ -297,9 +291,7 @@ public:
     }
 
     template <class G>
-    constexpr
-    Expected&
-    operator=(Unexpected<G>&& e)
+    constexpr auto operator=(Unexpected<G>&& e) -> Expected&
         requires std::constructible_from<E, G>
         && std::assignable_from<E&, G>
         && (std::is_nothrow_constructible_v<E, G> || std::is_nothrow_move_constructible_v<T> ||
