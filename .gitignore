@@ -1,4 +1,4 @@
-42tests/
+# Custom overrides at the end
 
 # Created by https://www.toptal.com/developers/gitignore/api/cmake,clion,visualstudio,visualstudiocode,c++,c
 # Edit at https://www.toptal.com/developers/gitignore?templates=cmake,clion,visualstudio,visualstudiocode,c++,c
@@ -620,3 +620,6 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake,clion,visualstudio,visualstudiocode,c++,c
+
+42tests/
+!/Makefile
