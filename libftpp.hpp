@@ -13,5 +13,7 @@
 #include "library/mathematics.hpp"
 #include "library/chrono.hpp"
 #include "library/observable_value.hpp"
+#include "library/expected.hpp"
+#include "library/logger.hpp"
 
 #endif //LIBFTPP_HPP

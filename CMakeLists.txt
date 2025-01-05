@@ -62,6 +62,7 @@ add_library(libftpp STATIC
         library/observable_value.hpp
 
         library/expected.hpp
+
         library/logger.cpp
         library/logger.hpp
 )
