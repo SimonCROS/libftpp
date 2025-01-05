@@ -67,7 +67,7 @@ add_library(libftpp STATIC
 )
 set_target_properties(libftpp PROPERTIES PREFIX "")
 target_compile_options(libftpp PRIVATE
-        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
         -Wall -Wextra -Werror>
         $<$<CXX_COMPILER_ID:MSVC>:
         /W4 /WX>
@@ -95,4 +95,3 @@ create_test_executables(42tests "42_")
 create_test_executables(tests "")
 
 add_compile_definitions(LIBFTPP_DISABLE_P0323R12)
-add_compile_definitions(LIBFTPP_ENABLE_P2508R1)

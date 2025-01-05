@@ -9,7 +9,10 @@
 
 // std::format_string was standardized on __cpp_lib_format >= 202207L.
 // However, this class is present in implementations where P2508R1 has been adopted, but P2419R2 has not yet been implemented.
-#if __cpp_lib_format >= 202207L || (__cpp_lib_format >= 201907L && defined(LIBFTPP_ENABLE_P2508R1))
+//
+// Additionally, __cpp_lib_format FTM requires P1361R2, which was only finalized as of clang 19
+// In this case, P2508R1 has been adopted since llvm 15
+#if __cpp_lib_format >= 202207L || (defined(__clang__) && __clang_major__ >= 15)
 
 #ifndef LIBFTPP_LOGGER
 #define LIBFTPP_LOGGER

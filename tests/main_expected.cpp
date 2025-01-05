@@ -15,11 +15,11 @@ struct MyType
     size_t dummy3;
     size_t dummy4;
 
-    constexpr MyType() { std::cout << "Default constructor" << std::endl; }
-    constexpr MyType(int x) { std::cout << "Single int constructor" << std::endl; }
-    constexpr MyType(std::initializer_list<int> il) { std::cout << "Initializer list constructor" << std::endl; }
-    constexpr MyType(MyType&& my) noexcept { std::cout << "Move constructor" << std::endl; }
-    constexpr MyType(const MyType& my) { std::cout << "Copy constructor" << std::endl; }
+    MyType() { std::cout << "Default constructor" << std::endl; }
+    MyType(int x) { std::cout << "Single int constructor" << std::endl; }
+    MyType(std::initializer_list<int> il) { std::cout << "Initializer list constructor" << std::endl; }
+    MyType(MyType&& my) noexcept { std::cout << "Move constructor" << std::endl; }
+    MyType(const MyType& my) { std::cout << "Copy constructor" << std::endl; }
 };
 
 int main()
