@@ -115,59 +115,59 @@ public:
     // Bug with member access in trailing return type of locally defined friend functions
     // https://github.com/llvm/llvm-project/issues/63526
 #if __llvm__
-#ifndef _vec_vec_operation_result
-#define _vec_vec_operation_result(op) IVector3<decltype(std::declval<TType>() op std::declval<UType>())>
+#ifndef _vec3_vec_operation_result
+#define _vec3_vec_operation_result(op) IVector3<decltype(std::declval<TType>() op std::declval<UType>())>
 #endif
-#ifndef _vec_scl_operation_result
-#define _vec_scl_operation_result(op) IVector3<decltype(std::declval<TType>() op std::declval<UType>())>
+#ifndef _vec3_scl_operation_result
+#define _vec3_scl_operation_result(op) IVector3<decltype(std::declval<TType>() op std::declval<UType>())>
 #endif
 #else
-#ifndef _vec_vec_operation_result
-#define _vec_vec_operation_result(op) IVector3<decltype(lhs.x op rhs.x)>
+#ifndef _vec3_vec_operation_result
+#define _vec3_vec_operation_result(op) IVector3<decltype(lhs.x op rhs.x)>
 #endif
-#ifndef _vec_scl_operation_result
-#define _vec_scl_operation_result(op) IVector3<decltype(lhs.x op rhs)>
+#ifndef _vec3_scl_operation_result
+#define _vec3_scl_operation_result(op) IVector3<decltype(lhs.x op rhs)>
 #endif
 #endif
 
     template <class UType>
         requires addable_with<TType, const UType>
-    friend auto operator+(IVector3 lhs, const IVector3<UType>& rhs) -> _vec_vec_operation_result(+)
+    friend auto operator+(IVector3 lhs, const IVector3<UType>& rhs) -> _vec3_vec_operation_result(+)
     {
         return {lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
     }
 
     template <class UType>
         requires subtractable_with<TType, const UType>
-    friend auto operator-(IVector3 lhs, const IVector3<UType>& rhs) -> _vec_vec_operation_result(-)
+    friend auto operator-(IVector3 lhs, const IVector3<UType>& rhs) -> _vec3_vec_operation_result(-)
     {
         return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
     }
 
     template <class UType>
         requires multipliable_with<TType, const UType>
-    friend auto operator*(IVector3 lhs, const IVector3<UType>& rhs) -> _vec_vec_operation_result(*)
+    friend auto operator*(IVector3 lhs, const IVector3<UType>& rhs) -> _vec3_vec_operation_result(*)
     {
         return {lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z};
     }
 
     template <class UType>
         requires (!std::same_as<std::decay_t<UType>, IVector3>) && multipliable_with<TType, UType>
-    friend auto operator*(IVector3 lhs, UType&& rhs) -> _vec_scl_operation_result(*)
+    friend auto operator*(IVector3 lhs, UType&& rhs) -> _vec3_scl_operation_result(*)
     {
         return {lhs.x * std::forward<UType>(rhs), lhs.y * std::forward<UType>(rhs), lhs.z * std::forward<UType>(rhs)};
     }
 
     template <class UType>
         requires dividable_with<TType, UType>
-    friend auto operator/(IVector3 lhs, const IVector3<UType>& rhs) -> _vec_vec_operation_result(/)
+    friend auto operator/(IVector3 lhs, const IVector3<UType>& rhs) -> _vec3_vec_operation_result(/)
     {
         return {lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z};
     }
 
     template <class UType>
         requires (!std::same_as<std::decay_t<UType>, IVector3>) && dividable_with<TType, UType>
-    friend auto operator/(IVector3 lhs, UType&& rhs) -> _vec_scl_operation_result(/)
+    friend auto operator/(IVector3 lhs, UType&& rhs) -> _vec3_scl_operation_result(/)
     {
         return {lhs.x / std::forward<UType>(rhs), lhs.y / std::forward<UType>(rhs), lhs.z / std::forward<UType>(rhs)};
     }
