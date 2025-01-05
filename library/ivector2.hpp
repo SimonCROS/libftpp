@@ -114,11 +114,19 @@ public:
     // Bug with member access in trailing return type of locally defined friend functions
     // https://github.com/llvm/llvm-project/issues/63526
 #if __llvm__
+#ifndef _vec_vec_operation_result
 #define _vec_vec_operation_result(op) IVector2<decltype(std::declval<TType>() op std::declval<UType>())>
+#endif
+#ifndef _vec_scl_operation_result
 #define _vec_scl_operation_result(op) IVector2<decltype(std::declval<TType>() op std::declval<UType>())>
+#endif
 #else
+#ifndef _vec_vec_operation_result
 #define _vec_vec_operation_result(op) IVector2<decltype(lhs.x op rhs.x)>
+#endif
+#ifndef _vec_scl_operation_result
 #define _vec_scl_operation_result(op) IVector2<decltype(lhs.x op rhs)>
+#endif
 #endif
 
     template <class UType>
