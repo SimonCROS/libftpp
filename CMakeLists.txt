@@ -65,6 +65,8 @@ add_library(libftpp STATIC
 
         library/logger.cpp
         library/logger.hpp
+
+        library/internal/compile_helpers.hpp
 )
 set_target_properties(libftpp PROPERTIES PREFIX "")
 target_compile_options(libftpp PRIVATE

@@ -4,13 +4,21 @@
 
 #ifndef DATA_BUFFER_HPP
 #define DATA_BUFFER_HPP
+#include <version>
 #include <cstdint>
 #include <deque>
 #include <limits>
 #include <optional>
 #include <streambuf>
-#include <vector>
 #include <string_view>
+
+#include "internal/compile_helpers.hpp"
+
+#if defined(CAN_USE_RANGES) && __cpp_lib_ranges >= 201911L
+#include <ranges>
+#else
+#include <vector>
+#endif
 
 class DataBuffer
 {
@@ -33,7 +41,12 @@ public:
 
     auto pushBytes(const void* data, std::size_t size) -> void;
 
-    [[nodiscard]] auto frontBytes(std::size_t size) -> std::ranges::subrange<container_type::const_iterator>;
+    [[nodiscard]] auto frontBytes(std::size_t size) ->
+#if defined(CAN_USE_RANGES) && __cpp_lib_ranges >= 201911L
+        std::ranges::subrange<container_type::const_iterator>;
+#else
+        std::vector<container_type::value_type>;
+#endif
 
     auto unshiftBytes(std::size_t size, void* out) -> void;
 

@@ -6,7 +6,6 @@
 
 #include <cassert>
 #include <algorithm>
-#include <ranges>
 
 const char* DataBuffer::DataDeserializationException::what() const noexcept
 {
@@ -44,7 +43,13 @@ auto DataBuffer::pushBytes(const void* data, const std::size_t size) -> void
     m_bytes.insert(m_bytes.end(), ptr, ptr + size);
 }
 
-auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<container_type::const_iterator>
+
+auto DataBuffer::frontBytes(const std::size_t size) ->
+#if defined(CAN_USE_RANGES) && __cpp_lib_ranges >= 201911L
+    std::ranges::subrange<container_type::const_iterator>
+#else
+    std::vector<container_type::value_type>
+#endif
 {
     if (size > size_max_v)
         throw DataDeserializationException();
@@ -52,7 +57,11 @@ auto DataBuffer::frontBytes(const std::size_t size) -> std::ranges::subrange<con
     if (m_bytes.size() < size)
         throw DataDeserializationException();
 
+#if defined(CAN_USE_RANGES) && __cpp_lib_ranges >= 201911L
     return std::ranges::subrange(m_bytes.begin(), m_bytes.begin() + static_cast<container_type::difference_type>(size));
+#else
+    return {m_bytes.begin(), m_bytes.begin() + static_cast<container_type::difference_type>(size)};
+#endif
 }
 
 auto DataBuffer::unshiftBytes(const std::size_t size, void* out) -> void

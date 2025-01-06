@@ -5,13 +5,24 @@
 #include "worker_pool.hpp"
 #include "thread_safe_iostream.hpp"
 
+#include <version>
+
+#if __cpp_lib_format >= 201907L
 #include <format>
+#endif
 
 auto WorkerPool::worker(const int id) -> void
 {
-    threadSafeCout.setPrefix(std::format("[Worker {}] ", id));
-    tscout().setPrefix(std::format("[Worker {}] ", id));
-    tscerr().setPrefix(std::format("[Worker {}] ", id));
+    std::string prefix;
+#if __cpp_lib_format >= 201907L
+    prefix = std::format("[Worker {}] ", id);
+#else
+    prefix = std::string("[Worker ") + std::to_string(id) + "] ";
+#endif
+
+    threadSafeCout.setPrefix(prefix);
+    tscout().setPrefix(prefix);
+    tscerr().setPrefix(prefix);
 
     while (!m_stop)
     {

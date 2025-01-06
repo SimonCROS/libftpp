@@ -6,6 +6,7 @@
 #define MESSAGE_HPP
 
 #include "data_buffer.hpp"
+#include <vector>
 
 class Client;
 class Server;

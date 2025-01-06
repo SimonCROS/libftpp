@@ -3,6 +3,7 @@ CMAKE				:= "cmake" # must keep quotes (1)
 CMAKE_TARGET		:= libftpp
 BUILD_DIRECTORY		:= cmake-build-export
 MAKEFILE_ARGUMENTS	:= -j 6 VERBOSE=1
+MAKEFILE_ARGUMENTS	:= VERBOSE=1
 
 all: $(NAME)
 .PHONY : all

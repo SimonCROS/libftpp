@@ -23,6 +23,7 @@
 #include <iostream>
 
 #include "server.hpp"
+#include "internal/compile_helpers.hpp"
 
 Server::~Server()
 {
@@ -77,7 +78,16 @@ auto Server::start(const size_t& p_port) -> void
     }
 
     m_serverFd = fd;
+#if __cpp_aggregate_paren_init
     m_pollfds.emplace_back(fd, POLLIN);
+#else
+    {
+        pollfd pfd{};
+        pfd.fd = fd;
+        pfd.events = POLLIN;
+        m_pollfds.push_back(pfd);
+    }
+#endif
     m_running = true;
 
     m_thread = std::thread(&Server::loop, this);
@@ -156,7 +166,11 @@ auto Server::sendToAll(const Message& message) -> void
     std::scoped_lock lock(m_clientAccessMutex);
 
     const auto bytes = message.serialize();
+#if defined(CAN_USE_RANGES) && __cpp_lib_ranges >= 201911L
     for (const auto& client : std::views::values(m_clients))
+#else
+    for (const auto& [_, client] : m_clients)
+#endif
     {
         if (client.fd > -1)
         {
@@ -319,7 +333,12 @@ auto Server::addClient(const int fd) -> client_id_t
     const client_id_t id = m_nextClientId;
 
     m_fdToClientId[fd] = id;
+#if __cpp_aggregate_paren_init
     m_clients.try_emplace(id, fd);
+#else
+    if (!m_clients.contains(id))
+        m_clients[id] = ServerClient{.fd = fd, .messages = {}};
+#endif
     ++m_nextClientId;
     return id;
 }
@@ -374,7 +393,16 @@ auto Server::acceptIncomingConnection() -> std::vector<pollfd>
             continue;
         }
 
+#if __cpp_aggregate_paren_init
         added.emplace_back(newFd, POLLIN);
+#else
+        {
+            pollfd pfd{};
+            pfd.fd = newFd;
+            pfd.events = POLLIN;
+            added.push_back(pfd);
+        }
+#endif
         auto id = addClient(newFd);
         threadSafeCout << "Client connected (" << id << ")" << std::endl;
     }

@@ -3,6 +3,7 @@
 //
 
 #include "persistent_worker.hpp"
+#include "internal/compile_helpers.hpp"
 
 #include <ranges>
 
@@ -30,11 +31,16 @@ auto PersistentWorker::worker() -> void
             // Scope for std::scoped_lock
             std::scoped_lock s_lock(m_dataMutex);
 
+#if defined(CAN_USE_RANGES) && __cpp_lib_ranges >= 201911L
             auto jobs = std::views::values(m_jobs);
 #if __cpp_lib_containers_ranges >= 202202L
             cachedJobs.assign_range(jobs);
 #else
             cachedJobs.assign(jobs.begin(), jobs.end());
+#endif
+#else
+            for (const auto& [_, job] : m_jobs)
+                cachedJobs.push_back(job);
 #endif
         }
 

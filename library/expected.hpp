@@ -106,6 +106,12 @@ public:
 template <class E>
 Unexpected(E) -> Unexpected<E>;
 
+template <class U>
+static constexpr bool is_unexpected = false;
+
+template <class U>
+static constexpr bool is_unexpected<Unexpected<U>> = true;
+
 template <class T, class E>
 class Expected
 {
@@ -126,11 +132,13 @@ private:
     static constexpr std::size_t t_index = 1;
     static constexpr std::size_t e_index = 2;
 
-    template <class U>
-    static constexpr bool is_unexpected = false;
-
-    template <class U>
-    static constexpr bool is_unexpected<Unexpected<U>> = true;
+    // Declared above, for compatibility with compilers not following CWG 727
+    //
+    // template <class U>
+    // static constexpr bool is_unexpected = false;
+    //
+    // template <class U>
+    // static constexpr bool is_unexpected<Unexpected<U>> = true;
 
     variant_type m_variant;
 

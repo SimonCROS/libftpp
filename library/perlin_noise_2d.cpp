@@ -35,7 +35,7 @@ PerlinNoise2D::PerlinNoise2D()
     // generate [-1, 1] range, [-1, 1) without std::nextafter
     std::uniform_real_distribution<float> distribution{-1.0f, std::nextafter(1.0f, std::numeric_limits<float>::max())};
 
-    const auto dice = [&distribution, &generator] -> float { return distribution(generator); };
+    const auto dice = [&distribution, &generator]() -> float { return distribution(generator); };
     for (auto& v : m_gradient)
     {
         v = IVector2(dice(), dice()).normalize();
