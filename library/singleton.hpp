@@ -11,30 +11,43 @@
 #include <concepts>
 #include <stdexcept>
 
+template <class Container, class... Args>
+concept emplace_constructible_from = requires(Container& container, Args&&... args)
+{
+    container.emplace(std::forward<Args>(args)...);
+};
+
 template <class TType>
 class Singleton
 {
+private:
+    using container_type = std::optional<TType>;
+
 public:
     Singleton() = delete;
 
     static auto instance() -> TType*
     {
-        if (!m_instance)
+        if (!ms_instance)
             throw std::invalid_argument("Instance not yet created");
-        return &m_instance.value();
+        return &ms_instance.value();
     }
 
+    // I'm not using std::constructible_from as it does not take context into account (so friendship is ignored)
     template <class... TArgs>
-        requires std::constructible_from<TType, TArgs...>
-    static auto instantiate(TArgs&&... p_args) -> void
+    static auto instantiate(TArgs&&... p_args) -> void requires requires { TType(std::forward<TArgs>(p_args)...); }
     {
-        if (m_instance)
+        if (ms_instance)
             throw std::invalid_argument("Instance already created");
-        m_instance.emplace(std::forward<TArgs>(p_args)...);
+
+        if constexpr (emplace_constructible_from<container_type, TArgs...>)
+            ms_instance.emplace(std::forward<TArgs>(p_args)...);
+        else
+            ms_instance.emplace(TType(std::forward<TArgs>(p_args)...));
     }
 
 private:
-    static inline std::optional<TType> m_instance = std::nullopt;
+    static inline container_type ms_instance = std::nullopt;
 };
 
 #endif
