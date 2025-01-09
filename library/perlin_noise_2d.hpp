@@ -29,20 +29,47 @@ private:
 
     Vector2<float> m_gradient[m_table_size];
 
-    static auto smoothstep(float t) -> float;
-    static auto interpolate(float a, float b, float t) -> float;
-    static auto gradient_index(uint32_t x, uint32_t y) -> uint8_t;
+    [[nodiscard]] static auto smoothstep(float t) -> float;
+
+    [[nodiscard]] static auto interpolate(const float a, const float b, const float t) -> float
+    {
+        return a + (b - a) * smoothstep(t);
+    }
+
+    [[nodiscard]] static auto gradient_index(const uint32_t x, const uint32_t y) -> uint8_t
+    {
+        return m_permutation[(m_permutation[x] + y) & m_table_size_mask];
+    }
+
+    [[nodiscard]] auto sampleOctave(float x, float y) const -> float;
 
 public:
-    PerlinNoise2D();
+    int octaveCount = 1;
+    float amplitude = 1.0f;
+    float frequency = 1.0f;
+    float persistence = 0.5f;
+    float lacunarity = 2.0f;
+
+    explicit PerlinNoise2D(int octaveCount = 1, float amplitude = 1.0f, float frequency = 0.05f,
+                           float persistence = 0.5f,
+                           float lacunarity = 2.0f);
 
     [[nodiscard]] auto sample(float x, float y) const -> float;
 
-    [[nodiscard]] auto sample(float x, float y,
-                float amplitude, float frequency,
-                int octaveCount, float persistence, float lacunarity) const -> float;
+    [[nodiscard]] auto sample(const Vector2<float> location) const -> float
+    {
+        return sample(location.x, location.y);
+    }
 
-    [[nodiscard]] auto operator()(float x, float y) const -> float;
+    [[nodiscard]] auto operator()(float x, float y) const -> float
+    {
+        return sample(x, y);
+    }
+
+    [[nodiscard]] auto operator()(const Vector2<float> location) const -> float
+    {
+        return sample(location.x, location.y);
+    }
 };
 
 #endif //PERLIN_NOISE_2_D_HPP

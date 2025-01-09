@@ -17,32 +17,7 @@ auto PerlinNoise2D::smoothstep(const float t) -> float
     return t * t * (3.0f - 2.0f * t);
 }
 
-auto PerlinNoise2D::interpolate(const float a, const float b, const float t) -> float
-{
-    return a + (b - a) * smoothstep(t);
-}
-
-auto PerlinNoise2D::gradient_index(const uint32_t x, const uint32_t y) -> uint8_t
-{
-    return m_permutation[(m_permutation[x] + y) & m_table_size_mask];
-}
-
-PerlinNoise2D::PerlinNoise2D()
-{
-    std::random_device rd;
-    std::mt19937 generator{rd()};
-
-    // generate [-1, 1] range, [-1, 1) without std::nextafter
-    std::uniform_real_distribution<float> distribution{-1.0f, std::nextafter(1.0f, std::numeric_limits<float>::max())};
-
-    const auto dice = [&distribution, &generator]() -> float { return distribution(generator); };
-    for (auto& v : m_gradient)
-    {
-        v = Vector2(dice(), dice()).normalize();
-    }
-}
-
-auto PerlinNoise2D::sample(const float x, const float y) const -> float
+auto PerlinNoise2D::sampleOctave(const float x, const float y) const -> float
 {
     const uint32_t ix0 = static_cast<int>(std::floor(x)) & m_table_size_mask;
     const uint32_t iy0 = static_cast<int>(std::floor(y)) & m_table_size_mask;
@@ -72,22 +47,38 @@ auto PerlinNoise2D::sample(const float x, const float y) const -> float
     return interpolate(a, b, v);
 }
 
-auto PerlinNoise2D::sample(const float x, const float y, float amplitude, float frequency, const int octaveCount,
-                           const float persistence, const float lacunarity) const -> float
+PerlinNoise2D::PerlinNoise2D(int octaveCount, float amplitude, float frequency, float persistence, float lacunarity) :
+    octaveCount(octaveCount),
+    amplitude(amplitude),
+    frequency(frequency),
+    persistence(persistence),
+    lacunarity(lacunarity)
+{
+    std::random_device rd;
+    std::mt19937 generator{rd()};
+
+    // generate [-1, 1] range, [-1, 1) without std::nextafter
+    std::uniform_real_distribution<float> distribution{-1.0f, std::nextafter(1.0f, std::numeric_limits<float>::max())};
+
+    const auto dice = [&distribution, &generator]() -> float { return distribution(generator); };
+    for (auto& v : m_gradient)
+    {
+        v = Vector2(dice(), dice()).normalize();
+    }
+}
+
+auto PerlinNoise2D::sample(const float x, const float y) const -> float
 {
     float value = 0;
+    float a = amplitude;
+    float f = frequency;
 
     for (int i = 0; i < octaveCount; i++)
     {
-        value += amplitude * sample(x * frequency, y * frequency);
-        amplitude *= persistence;
-        frequency *= lacunarity;
+        value += a * sampleOctave(x * f, y * f);
+        a *= persistence;
+        f *= lacunarity;
     }
 
     return std::clamp(value, -1.0f, 1.0f);
-}
-
-auto PerlinNoise2D::operator()(const float x, const float y) const -> float
-{
-    return sample(x, y);
 }
