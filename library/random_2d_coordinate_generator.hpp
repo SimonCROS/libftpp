@@ -4,18 +4,38 @@
 
 #ifndef RANDOM_2_D_COORDINATE_GENERATOR_HPP
 #define RANDOM_2_D_COORDINATE_GENERATOR_HPP
+#include "vector2.hpp"
 
 class Random2DCoordinateGenerator {
 private:
-    long long m_seed{};
+    long m_seed{};
 
 public:
     Random2DCoordinateGenerator() = default;
 
-    explicit Random2DCoordinateGenerator(long long seed);
+    constexpr explicit Random2DCoordinateGenerator(const long seed): m_seed{seed} {}
 
-    [[nodiscard]] auto seed() const -> long long;
-    [[nodiscard]] auto operator()(const long long& x, const long long& y) const -> long long;
+    [[nodiscard]] constexpr auto seed() const -> long
+    {
+        return m_seed;
+    }
+
+    [[nodiscard]] auto get(long x, long y) const -> long;
+
+    [[nodiscard]] auto get(Vector2<long> point) const -> long
+    {
+        return get(point.x, point.y);
+    }
+
+    [[nodiscard]] auto operator()(const long x, const long y) const -> long
+    {
+        return get(x, y);
+    }
+
+    [[nodiscard]] auto operator()(Vector2<long> point) const -> long
+    {
+        return get(point.x, point.y);
+    }
 };
 
 #endif //RANDOM_2_D_COORDINATE_GENERATOR_HPP

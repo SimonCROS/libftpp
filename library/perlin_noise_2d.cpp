@@ -38,11 +38,11 @@ PerlinNoise2D::PerlinNoise2D()
     const auto dice = [&distribution, &generator]() -> float { return distribution(generator); };
     for (auto& v : m_gradient)
     {
-        v = IVector2(dice(), dice()).normalize();
+        v = Vector2(dice(), dice()).normalize();
     }
 }
 
-auto PerlinNoise2D::sample(const float x, const float y) -> float
+auto PerlinNoise2D::sample(const float x, const float y) const -> float
 {
     const uint32_t ix0 = static_cast<int>(std::floor(x)) & m_table_size_mask;
     const uint32_t iy0 = static_cast<int>(std::floor(y)) & m_table_size_mask;
@@ -61,10 +61,10 @@ auto PerlinNoise2D::sample(const float x, const float y) -> float
     const auto& gradient10 = m_gradient[gradient_index(ix1, iy0)];
     const auto& gradient11 = m_gradient[gradient_index(ix1, iy1)];
 
-    const IVector2 offset00(tx, ty);
-    const IVector2 offset01(tx, ty - 1);
-    const IVector2 offset10(tx - 1, ty);
-    const IVector2 offset11(tx - 1, ty - 1);
+    const Vector2 offset00(tx, ty);
+    const Vector2 offset01(tx, ty - 1);
+    const Vector2 offset10(tx - 1, ty);
+    const Vector2 offset11(tx - 1, ty - 1);
 
     const float a = interpolate(gradient00.dot(offset00), gradient10.dot(offset10), u);
     const float b = interpolate(gradient01.dot(offset01), gradient11.dot(offset11), u);
@@ -73,7 +73,7 @@ auto PerlinNoise2D::sample(const float x, const float y) -> float
 }
 
 auto PerlinNoise2D::sample(const float x, const float y, float amplitude, float frequency, const int octaveCount,
-                           const float persistence, const float lacunarity) -> float
+                           const float persistence, const float lacunarity) const -> float
 {
     float value = 0;
 
@@ -87,7 +87,7 @@ auto PerlinNoise2D::sample(const float x, const float y, float amplitude, float 
     return std::clamp(value, -1.0f, 1.0f);
 }
 
-auto PerlinNoise2D::operator()(const float x, const float y) -> float
+auto PerlinNoise2D::operator()(const float x, const float y) const -> float
 {
     return sample(x, y);
 }

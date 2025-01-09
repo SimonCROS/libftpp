@@ -6,16 +6,7 @@
 
 #include "random_2d_coordinate_generator.hpp"
 
-Random2DCoordinateGenerator::Random2DCoordinateGenerator(const long long seed) : m_seed(seed)
-{
-}
-
-auto Random2DCoordinateGenerator::seed() const -> long long
-{
-    return m_seed;
-}
-
-auto Random2DCoordinateGenerator::operator()(const long long& x, const long long& y) const -> long long
+auto Random2DCoordinateGenerator::get(const long x, const long y) const -> long
 {
     constexpr uint64_t m = 0xc6a4a7935bd1e995LLU;
     constexpr int r = 47;

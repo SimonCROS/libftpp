@@ -6,7 +6,7 @@
 #define PERLIN_NOISE_2_D_HPP
 #include <cstdint>
 
-#include "ivector2.hpp"
+#include "vector2.hpp"
 
 class PerlinNoise2D
 {
@@ -27,7 +27,7 @@ private:
         67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
     };
 
-    IVector2<float> m_gradient[m_table_size];
+    Vector2<float> m_gradient[m_table_size];
 
     static auto smoothstep(float t) -> float;
     static auto interpolate(float a, float b, float t) -> float;
@@ -36,13 +36,13 @@ private:
 public:
     PerlinNoise2D();
 
-    [[nodiscard]] auto sample(float x, float y) -> float;
+    [[nodiscard]] auto sample(float x, float y) const -> float;
 
     [[nodiscard]] auto sample(float x, float y,
                 float amplitude, float frequency,
-                int octaveCount, float persistence, float lacunarity) -> float;
+                int octaveCount, float persistence, float lacunarity) const -> float;
 
-    [[nodiscard]] auto operator()(float x, float y) -> float;
+    [[nodiscard]] auto operator()(float x, float y) const -> float;
 };
 
 #endif //PERLIN_NOISE_2_D_HPP

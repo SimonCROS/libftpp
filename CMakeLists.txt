@@ -43,8 +43,8 @@ add_library(libftpp STATIC
 
         library/mathematics.hpp
         library/mathematics_concepts.hpp
-        library/ivector2.hpp
-        library/ivector3.hpp
+        library/vector2.hpp
+        library/vector3.hpp
         library/random_2d_coordinate_generator.cpp
         library/random_2d_coordinate_generator.hpp
         library/perlin_noise_2d.cpp
