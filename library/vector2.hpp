@@ -201,4 +201,7 @@ struct Vector2
     }
 };
 
+template<class T>
+Vector2(T, T) -> Vector2<T>;
+
 #endif //IVECTOR2_HPP

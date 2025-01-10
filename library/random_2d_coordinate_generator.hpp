@@ -22,7 +22,7 @@ public:
 
     [[nodiscard]] auto get(long x, long y) const -> long;
 
-    [[nodiscard]] auto get(Vector2<long> point) const -> long
+    [[nodiscard]] auto get(const Vector2<long> point) const -> long
     {
         return get(point.x, point.y);
     }
@@ -32,7 +32,7 @@ public:
         return get(x, y);
     }
 
-    [[nodiscard]] auto operator()(Vector2<long> point) const -> long
+    [[nodiscard]] auto operator()(const Vector2<long> point) const -> long
     {
         return get(point.x, point.y);
     }

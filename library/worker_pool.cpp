@@ -20,7 +20,6 @@ auto WorkerPool::worker(const int id) -> void
     prefix = std::string("[Worker ") + std::to_string(id) + "] ";
 #endif
 
-    threadSafeCout.setPrefix(prefix);
     tscout().setPrefix(prefix);
     tscerr().setPrefix(prefix);
 
@@ -40,7 +39,7 @@ auto WorkerPool::worker(const int id) -> void
 
         try
         {
-            std::invoke(m_jobs.pop_front());
+            std::invoke(m_jobs.pop());
         }
         catch (...) {}
     }
@@ -71,6 +70,6 @@ WorkerPool::~WorkerPool()
 
 auto WorkerPool::addJob(const std::function<void()>& jobToExecute) -> void
 {
-    m_jobs.push_back(jobToExecute);
+    m_jobs.push(jobToExecute);
     m_conditionVariable.notify_one();
 }

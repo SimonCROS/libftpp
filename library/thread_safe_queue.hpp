@@ -6,12 +6,13 @@
 #define THREAD_SAFE_QUEUE_HPP
 #include <deque>
 #include <mutex>
+#include <queue>
 #include <stdexcept>
 
 template<class TType>
 class ThreadSafeQueue {
     std::mutex m_mutex;
-    std::deque<TType> m_deque;
+    std::queue<TType> m_deque;
 
 public:
     auto empty() -> bool
@@ -20,31 +21,13 @@ public:
         return m_deque.empty();
     }
 
-    auto push_back(const TType& newElement) -> void
+    auto push(const TType& newElement) -> void
     {
         std::scoped_lock lock(m_mutex);
-        m_deque.push_back(newElement);
+        m_deque.push(newElement);
     }
 
-    auto push_front(const TType& newElement) -> void
-    {
-        std::scoped_lock lock(m_mutex);
-        m_deque.push_front(newElement);
-    }
-
-    auto pop_back() -> TType
-    {
-        std::scoped_lock lock(m_mutex);
-
-        if (m_deque.empty())
-            throw std::runtime_error("Queue is empty");
-
-        TType tmp = m_deque.back();
-        m_deque.pop_back();
-        return tmp; // copy elision will happen if possible
-    }
-
-    auto pop_front() -> TType
+    auto pop() -> TType
     {
         std::scoped_lock lock(m_mutex);
 
@@ -52,7 +35,7 @@ public:
             throw std::runtime_error("Queue is empty");
 
         TType tmp = m_deque.front();
-        m_deque.pop_front();
+        m_deque.pop();
         return tmp; // copy elision will happen if possible
     }
 };

@@ -16,7 +16,7 @@ class Thread
     std::thread m_thread = {};
 
 public:
-    Thread(const std::string& name, std::function<void()> functToExecute);
+    Thread(const std::string_view& name, std::function<void()> functToExecute);
 
     auto start() -> void;
 

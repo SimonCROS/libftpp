@@ -36,10 +36,10 @@ auto PerlinNoise2D::sampleOctave(const float x, const float y) const -> float
     const auto& gradient10 = m_gradient[gradient_index(ix1, iy0)];
     const auto& gradient11 = m_gradient[gradient_index(ix1, iy1)];
 
-    const Vector2 offset00(tx, ty);
-    const Vector2 offset01(tx, ty - 1);
-    const Vector2 offset10(tx - 1, ty);
-    const Vector2 offset11(tx - 1, ty - 1);
+    const Vector2<float> offset00{tx, ty};
+    const Vector2<float> offset01{tx, ty - 1};
+    const Vector2<float> offset10{tx - 1, ty};
+    const Vector2<float> offset11{tx - 1, ty - 1};
 
     const float a = interpolate(gradient00.dot(offset00), gradient10.dot(offset10), u);
     const float b = interpolate(gradient01.dot(offset01), gradient11.dot(offset11), u);
@@ -47,7 +47,8 @@ auto PerlinNoise2D::sampleOctave(const float x, const float y) const -> float
     return interpolate(a, b, v);
 }
 
-PerlinNoise2D::PerlinNoise2D(int octaveCount, float amplitude, float frequency, float persistence, float lacunarity) :
+PerlinNoise2D::PerlinNoise2D(const int octaveCount, const float amplitude, const float frequency,
+                             const float persistence, const float lacunarity) :
     octaveCount(octaveCount),
     amplitude(amplitude),
     frequency(frequency),
