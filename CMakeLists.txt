@@ -33,14 +33,6 @@ add_library(libftpp STATIC
         library/persistent_worker.cpp
         library/persistent_worker.hpp
 
-        library/network.hpp
-        library/message.cpp
-        library/message.hpp
-        library/client.cpp
-        library/client.hpp
-        library/server.cpp
-        library/server.hpp
-
         library/mathematics.hpp
         library/mathematics_concepts.hpp
         library/vector2.hpp

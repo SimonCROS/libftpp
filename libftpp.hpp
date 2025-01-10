@@ -9,7 +9,6 @@
 #include "library/design_patterns.hpp"
 #include "library/thread_safe_iostream.hpp"
 #include "library/threading.hpp"
-#include "library/network.hpp"
 #include "library/mathematics.hpp"
 #include "library/chrono.hpp"
 #include "library/observable_value.hpp"
